@@ -1,0 +1,156 @@
+/* Front-facing, full-screen kitchen: floating orders on the left, timer/score on the right. */
+body { background: #79cfd2; }
+body:not(.is-menu) main { inset: 0; }
+body:not(.is-menu) .topbar { height: 0; padding: 0; border: 0; background: none; backdrop-filter: none; }
+body:not(.is-menu) .brand { display: none; }
+body:not(.is-menu) .top-level { position: fixed; top: 17px; left: 50%; transform: translateX(-50%); color: #fffbe8; padding: 10px 18px; border: 1px solid #ffffff75; border-radius: 25px; background: #285a767a; font-size: 9px; text-shadow: 0 1px #294e6b; }
+body:not(.is-menu) .top-level .live-dot { background: #fae4a2; }
+body:not(.is-menu) .top-level .divider { color: #bddfe7; }
+body:not(.is-menu) .toolbar { position: fixed; right: 18px; top: 20px; flex-direction: column; gap: 12px; }
+body:not(.is-menu) .icon-btn { width: 47px; height: 47px; background: #fff5d6ec; border: 3px solid #ffffffab; box-shadow: 0 3px 0 #43577340; color: #687166; }
+body:not(.is-menu) .icon-btn svg { width: 23px; height: 23px; }
+body:not(.is-menu) .bottom-bar { height: 47px; background: transparent; border: 0; pointer-events: none; justify-content: center; }
+body:not(.is-menu) .key-guide { background: #31475b9c; color: #fff1d5; border: 1px solid #dbefff5c; border-radius: 22px; padding: 8px 16px; gap: 17px; }
+body:not(.is-menu) .footer-note { display: none; }
+body:not(.is-menu) .game-hud { inset: 21px 85px auto 22px; gap: 12px; z-index: 4; }
+body:not(.is-menu) .orders { order: 0; gap: 12px; }
+body:not(.is-menu) .order { width: 159px; border: 3px solid #edf8ffe6; background: #cfeaff; border-radius: 12px; padding: 10px 11px; box-shadow: 0 4px 0 #31659562; }
+body:not(.is-menu) .order:after { display: none; }
+body:not(.is-menu) .order-top { color: #477a92; font-size: 9px; }
+body:not(.is-menu) .order-title { color: #2a5470; margin-top: 5px; font-size: 13px; }
+body:not(.is-menu) .order-ingredients { gap: 4px; }
+body:not(.is-menu) .order-ingredients svg { flex: none; height: 27px; width: 27px; padding: 3px; background: #f6fcffe3; border-radius: 50%; }
+body:not(.is-menu) .order-options { font-size: 8px; color: #496c79; white-space: nowrap; margin: 5px 0 7px; }
+body:not(.is-menu) .order[data-recipe="spicy"], body:not(.is-menu) .order[data-recipe="loaded"] { background: #ffe3cb; border-color: #fff4da; }
+.recipe-components .optional-part { position: relative; }
+.recipe-components .optional-part small { color: #9b7542; font-size: 8px; font-weight: 500; }
+.recipe-components { gap: 8px; }
+.recipe-components span { flex-shrink: 0; }
+.recipe-variants { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 14px 0; text-align: left; }
+.recipe-variants>div { background: #f2eddc; border-radius: 8px; padding: 8px 10px; }
+.recipe-variants strong { display: block; font-size: 11px; color: #5d7257; }
+.recipe-variants span { font-size: 9px; color: #797864; }
+body:not(.is-menu) .order-progress { background: #759a89; height: 7px; }
+body:not(.is-menu) .order-progress i { background: #a6d653; }
+body:not(.is-menu) .order.urgent .order-progress i { background: #f49659; }
+body:not(.is-menu) .timer-box { position: absolute; right: 0; top: 0; background: #4a88d6ed; border: 3px solid #d2f1ff; border-radius: 22px; padding: 10px 18px; color: white; grid-template-columns: 30px auto; box-shadow: 0 4px 0 #315d9680; }
+body:not(.is-menu) .timer-box strong { font-size: 34px; font-weight: 700; letter-spacing: 0; }
+body:not(.is-menu) .timer-box svg { color: #ffe4a1; width: 30px; height: 30px; }
+body:not(.is-menu) .timer-box span { color: #d7ebff; font-size: 7px; }
+body:not(.is-menu) .score-box { position: absolute; right: 0; top: 89px; min-width: 178px; background: #efa941ed; border: 3px solid #fff0bd; border-radius: 22px; color: #fffcec; box-shadow: 0 4px 0 #aa7b4280; padding: 10px 15px; }
+body:not(.is-menu) .score-box .eyebrow { color: #fff4d6; font-size: 8px; }
+body:not(.is-menu) .score-box strong { font-size: 32px; font-weight: 700; }
+body:not(.is-menu) #combo { color: #fff1ba; font-size: 9px; }
+body:not(.is-menu) .star-track { margin-top: 3px; gap: 7px!important; }
+body:not(.is-menu) .star-track span { color: #fff1c9; font-size: 7px; }
+body:not(.is-menu) .star-track svg { fill: #997e5999; width: 17px; height: 17px; }
+body:not(.is-menu) .star-track .earned svg { fill: #fff0a0; }
+body:not(.is-menu) .guide { top: auto; bottom: 120px; left: 50%; transform: translateX(-50%); width: 420px; max-width: calc(100vw - 420px); background: #fff7dee8; border: 2px solid #fff8e5; padding: 9px 12px; }
+body:not(.is-menu) .guide-icon { background: #ead3a1; color: #8e6b44; }
+body:not(.is-menu) .guide strong { color: #725b3e; }
+body:not(.is-menu) .guide p { color: #7e7764; }
+body:not(.is-menu) .context { left: 50%; right: auto; transform: translateX(-50%); bottom: 59px; }
+body:not(.is-menu) .context > span { color: #fff8d4; background: #42677daa; padding: 3px 9px; border-radius: 10px; margin-bottom: 4px; text-shadow: 0 1px #52675e; }
+body:not(.is-menu) .context > div { background: #fffae8e8; border: 2px solid #fff6d7; box-shadow: 0 3px 0 #43677840; }
+body:not(.is-menu) .hand { bottom: 61px; left: 25px; background: #fff7d9e8; border: 2px solid #fffae5; color: #7d603d; }
+body:not(.is-menu) .toast { bottom: 213px; background: #284f70e6; border: 1px solid #cee8eb84; }
+body:not(.is-menu) .station-label { background: #fff6d9f2; border-color: #fffce9; color: #725a37; padding: 4px 6px; font-size: 9px; box-shadow: 0 2px 0 #55594128; }
+body:not(.is-menu) .station-label svg { width: 16px; height: 16px; }
+body:not(.is-menu) .station-label.target { outline: 3px solid #fff3ab; background: #ffe0a2; }
+body:not(.is-menu) .station-label.guide-target { outline: 2px solid #ffe99e; }
+body:not(.is-menu) .station-label .bar>i { background: #8ebc49; }
+body:not(.is-menu) .station-label .bar { background: #d3c494; }
+body:not(.is-menu) .station-label.warn .bar>i { background: #e28743; }
+.is-menu .topbar,.is-menu .bottom-bar { background: #eff5e9ec; }
+.is-menu .menu-caption { background: #f6f8e9df; padding: 14px 18px; border-radius: 17px; left: 24px; top: 22px; }
+.is-menu .menu-caption h1 { font-size: 39px; margin-top: 7px; }
+.is-menu .level-badge { background: #eff4e8dd; border-radius: 15px; padding: 9px 13px; bottom: 18px; left: 24px; }
+.is-menu .welcome { background: #fff9e9f2; }
+.is-menu .welcome .primary-btn { background: #4485aa; box-shadow: 0 4px 0 #32617e; }
+@media(pointer:coarse) {
+  body:not(.is-menu) .bottom-bar:before { content: none; }
+  body:not(.is-menu) #joystick { background: #d4f1e166; border: 3px solid #ecfff58a; left: 25px; bottom: 25px; width: 122px; height: 122px; }
+  body:not(.is-menu) #joystick-knob { background: #fffbe4d9; border-color: #fffde1aa; }
+  body:not(.is-menu) .touch-actions { right: 24px; bottom: 26px; }
+  body:not(.is-menu) #action-touch { width: 100px; height: 100px; background: #4d8ca9c9; border: 3px solid #d7ffff8a; }
+  body:not(.is-menu) #dash-touch { background: #fff1b3d6; }
+  body:not(.is-menu) .hand { left: 168px; bottom: 25px; }
+  body:not(.is-menu) .context { bottom: 25px; }
+  body:not(.is-menu) .guide { bottom: 88px; }
+  body:not(.is-menu) .toast { bottom: 180px; }
+}
+@media(max-width:1100px) {
+  body:not(.is-menu) .game-hud { top: 14px; left: 16px; right: 71px; }
+  body:not(.is-menu) .order { width: 122px; padding: 7px; border-width: 2px; }
+  body:not(.is-menu) .order-title { font-size: 11px; }
+  body:not(.is-menu) .order-top { font-size: 7px; }
+  body:not(.is-menu) .order-ingredients svg { width: 23px; height: 23px; }
+  body:not(.is-menu) .order-ingredients { gap: 3px; }
+  body:not(.is-menu) .order-options { font-size: 7px; }
+  body:not(.is-menu) .timer-box { padding: 6px 11px; border-width: 2px; grid-template-columns: 22px auto; }
+  body:not(.is-menu) .timer-box strong { font-size: 28px; }
+  body:not(.is-menu) .timer-box svg { width: 23px; height: 23px; }
+  body:not(.is-menu) .score-box { top: 73px; min-width: 145px; padding: 8px 11px; border-width: 2px; }
+  body:not(.is-menu) .score-box strong { font-size: 27px; }
+  body:not(.is-menu) .toolbar { right: 13px; top: 15px; gap: 10px; }
+  body:not(.is-menu) .icon-btn { width: 41px; height: 41px; }
+  body:not(.is-menu) .top-level { font-size: 7px; top: 14px; padding: 8px 12px; }
+}
+@media(max-height:520px) and (min-width:701px) {
+  body:not(.is-menu) .game-hud { top: 10px; left: 12px; right: 61px; }
+  body:not(.is-menu) .orders { gap: 7px; }
+  body:not(.is-menu) .order { width: 100px; padding: 5px 6px; }
+  body:not(.is-menu) .order-title { font-size: 9px; margin: 3px 0; }
+  body:not(.is-menu) .order-ingredients svg { width: 19px; height: 19px; padding: 2px; }
+  body:not(.is-menu) .order-options { font-size: 6px; margin: 3px 0; }
+  body:not(.is-menu) .order-progress { height: 4px; margin-top: 5px; }
+  body:not(.is-menu) .timer-box { padding: 4px 9px; border-radius: 14px; gap: 5px; }
+  body:not(.is-menu) .timer-box strong { font-size: 24px; }
+  body:not(.is-menu) .timer-box span { display: none; }
+  body:not(.is-menu) .score-box { top: 44px; min-width: 127px; padding: 5px 10px; border-radius: 14px; }
+  body:not(.is-menu) .score-box strong { font-size: 23px; }
+  body:not(.is-menu) .score-box .eyebrow { font-size: 6px; }
+  body:not(.is-menu) .star-track { position: absolute; top: 68px; left: 6px; background: #586c687d; padding: 4px 7px; border-radius: 12px; }
+  body:not(.is-menu) .toolbar { top: 10px; right: 12px; gap: 8px; }
+  body:not(.is-menu) .icon-btn { width: 34px; height: 34px; border-width: 2px; }
+  body:not(.is-menu) .icon-btn svg { width: 19px; height: 19px; }
+  body:not(.is-menu) .top-level { display: none; }
+  body:not(.is-menu) .guide { bottom: 67px; max-width: 330px; width: 330px; padding: 7px 10px; }
+  body:not(.is-menu) .guide strong { font-size: 9px; }
+  body:not(.is-menu) .guide p { font-size: 8px; }
+  body:not(.is-menu) .context { bottom: 14px; max-width: 320px; }
+  body:not(.is-menu) .context>div { padding: 7px 10px; }
+  body:not(.is-menu) .station-label { font-size: 7px; padding: 3px 4px; }
+  body:not(.is-menu) .station-label svg { width: 12px; height: 12px; }
+  body:not(.is-menu) #joystick { width: 100px; height: 100px; left: 17px; bottom: 16px; }
+  body:not(.is-menu) .touch-actions { right: 17px; bottom: 18px; }
+  body:not(.is-menu) #action-touch { width: 82px; height: 82px; }
+  body:not(.is-menu) .hand { bottom: 16px; left: 132px; }
+  body:not(.is-menu) .toast { bottom: 143px; padding: 7px 12px; }
+  .is-menu .menu-caption h1 { font-size: 24px; }
+}
+@media(max-width:700px) {
+  .recipe-components span { flex-direction: column; gap: 3px; }
+  .recipe-components { padding: 8px 4px; gap: 5px; }
+  body:not(.is-menu) .game-hud { inset: 12px 58px auto 12px; }
+  body:not(.is-menu) .orders { position: static; width: 105px; flex: none; flex-direction: column; gap: 7px; }
+  body:not(.is-menu) .order { width: 105px; }
+  body:not(.is-menu) .order-title { font-size: 10px; }
+  body:not(.is-menu) .order-ingredients svg { width: 19px; height: 19px; }
+  body:not(.is-menu) .order-options { font-size: 6px; }
+  body:not(.is-menu) .timer-box { padding: 6px 9px; border-radius: 16px; }
+  body:not(.is-menu) .timer-box strong { font-size: 24px; }
+  body:not(.is-menu) .score-box { top: 69px; min-width: 134px; border-radius: 16px; }
+  body:not(.is-menu) .top-level { display: none; }
+  body:not(.is-menu) .toolbar { right: 10px; top: 15px; }
+  body:not(.is-menu) .icon-btn { width: 35px; height: 35px; }
+  body:not(.is-menu) .guide { bottom: 195px; max-width: calc(100% - 26px); width: 350px; }
+  body:not(.is-menu) .context { bottom: 139px; max-width: calc(100% - 30px); }
+  body:not(.is-menu) .hand { bottom: 24px; left: 140px; }
+  body:not(.is-menu) #joystick { width: 101px; height: 101px; left: 18px; bottom: 36px; }
+  body:not(.is-menu) #action-touch { width: 84px; height: 84px; }
+  body:not(.is-menu) .touch-actions { right: 18px; bottom: 32px; }
+  body:not(.is-menu) .toast { bottom: 279px; }
+  .is-menu .menu-caption { top: 13px; left: 17px; padding: 10px 13px; }
+  .is-menu .menu-caption h1 { font-size: 26px; }
+}
