@@ -4,7 +4,7 @@ import { KitchenGame } from './game.js';
 
 const ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const cleanName=name=>String(name||'Đầu bếp').replace(/[<>\u0000-\u001f]/g,'').trim().slice(0,18)||'Đầu bếp';
-const emptyInput=()=>({x:0,z:0,work:false});
+const emptyInput=()=>({x:0,z:0,work:false,dash:false});
 const validInput=input=>input && Number.isFinite(input.x) && Number.isFinite(input.z) && Math.abs(input.x)<=2 && Math.abs(input.z)<=2;
 
 export function attachRooms(server,{maxRooms=20,reconnectMs=180000}={}) {
@@ -68,11 +68,11 @@ export function attachRooms(server,{maxRooms=20,reconnectMs=180000}={}) {
       const game=room.game;
       if(msg.type==='input') {
         if(!validInput(msg.input))return;
-        member.input={x:msg.input.x,z:msg.input.z,work:msg.input.work===true};member.lastInput=now;return;
+        member.input={x:msg.input.x,z:msg.input.z,work:msg.input.work===true,dash:msg.input.dash===true};member.lastInput=now;return;
       }
-      if(msg.type==='action' && ['interact','dash'].includes(msg.action)) {
+      if(msg.type==='action' && ['interact','dash','drop','throw'].includes(msg.action)) {
         if(now-(member.lastAction||0)<70)return;member.lastAction=now;
-        game.withPlayer(member.id,()=>game[msg.action]());broadcast(room);return;
+        game.withPlayer(member.id,()=>msg.action==='throw'?game.throwItem(msg.target):game[msg.action]());broadcast(room);return;
       }
       if(msg.type==='start') {
         if(member.id!=='chef-1')return error(socket,'Chủ phòng sẽ bắt đầu ca bếp.');

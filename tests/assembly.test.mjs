@@ -1,66 +1,79 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { KitchenGame, RECIPES, itemKey, recipeForItem, isReadyPlate } from '../src/game.js';
-
+import {KitchenGame,RECIPES,RULES,itemKey,recipeForItem,isReadyPlate} from '../src/game.js';
 const ready=kind=>({kind,state:{bread:'ready',meat:'cooked',vegetable:'chopped',sauce:'ready'}[kind]});
-function setup(){const game=new KitchenGame();game.reset('playing');return game;}
-function face(game,id,player=game.player){const s=game.stations.find(s=>s.id===id),a=s.approach,length=Math.hypot(a.x,a.z);Object.assign(player,{x:s.x+a.x,z:s.z+a.z,facingX:-a.x/length,facingZ:-a.z/length});return s;}
-function tick(game,seconds,input={}){for(let i=0;i<Math.round(seconds/.02);i++)game.tick(.02,input);}
+const setup=()=>{const g=new KitchenGame();g.reset('playing');return g;};
+function face(g,id,p=g.player){const s=g.stations.find(s=>s.id===id),a=s.approach,n=Math.hypot(a.x,a.z);Object.assign(p,{x:s.x+a.x,z:s.z+a.z,facingX:-a.x/n,facingZ:-a.z/n});return s;}
+function tick(g,seconds,input={}){for(let r=seconds;r>1e-9;r-=.02)g.tick(Math.min(.02,r),input);}
 
-test('all four meals can be assembled on every type of station before adding a plate',()=>{
-  for(const recipe of RECIPES)for(const definition of setup().stations){
-    const game=setup(),s=face(game,definition.id);
-    const parts=recipe.parts.map(key=>{const [kind,state]=key.split(':');return {kind,state};});
-    s.item=parts[0];
-    for(const part of parts.slice(1)){game.player.hand=part;game.interact();assert.equal(game.player.hand,null);}
-    assert.equal(s.item.kind,'meal');assert.equal(recipeForItem(s.item)?.id,recipe.id);assert.equal(isReadyPlate(s.item),false);assert.equal(game.cleanPlates,3);
-    game.player.hand={kind:'plate',parts:[]};game.cleanPlates--;game.interact();
-    assert.equal(s.item,null);assert.equal(isReadyPlate(game.player.hand),true);assert.equal(game.player.hand.parts.length,parts.length);
+test('all unplated recipes stay in hand after merging ready ingredients at any clear station',()=>{
+  for(const recipe of RECIPES)for(const def of setup().stations){
+    const g=setup(),s=face(g,def.id),parts=recipe.parts.map(key=>{const [kind,state]=key.split(':');return {kind,state};});
+    if(s.item?.kind==='plate')g.placeGround(s.item,5,3);
+    g.player.hand=parts[0];
+    for(const part of parts.slice(1)){s.item=part;g.interact();assert.equal(s.item,null);assert.ok(g.player.hand);}
+    assert.equal(recipeForItem(g.player.hand).id,recipe.id);assert.equal(isReadyPlate(g.player.hand),false);assert.equal(g.cleanPlates,4);
   }
 });
 
-test('a carried meal can join a resting plate, and two separate ingredient groups combine',()=>{
-  const game=setup(),s=face(game,'counter-a');
-  s.item=game.merge(ready('meat'),ready('vegetable'));
-  game.player.hand=game.merge(ready('bread'),ready('sauce'));game.interact();
-  assert.equal(recipeForItem(s.item)?.id,'loaded');game.interact();
-  const plate={kind:'plate',parts:[]};s.item=plate;game.cleanPlates--;game.interact();
-  assert.equal(game.player.hand,null);assert.equal(s.item,plate);assert.equal(isReadyPlate(plate),true);
-});
-
-test('raw, burnt, duplicate ingredients and conflicting groups never destroy held or resting food',()=>{
-  for(const invalid of [{kind:'meat',state:'raw'},{kind:'meat',state:'chopped'},{kind:'meat',state:'burnt'},ready('bread'),{kind:'meal',parts:[ready('sauce'),ready('bread')]}]){
-    const game=setup(),s=face(game,'board-a');s.item=game.merge(ready('bread'),ready('vegetable'));game.player.hand=invalid;
-    const before=JSON.stringify([s.item,game.player.hand]);game.interact();assert.equal(JSON.stringify([s.item,game.player.hand]),before);
+test('plate assembly works in both directions and rejects dirt, raw food and duplicates losslessly',()=>{
+  const g=setup(),s=face(g,'counter-a');s.item={kind:'plate',parts:[]};g.player.hand=ready('bread');g.interact();assert.equal(g.player.hand,null);assert.equal(s.item.parts.length,1);
+  const plate=s.item;s.item=ready('meat');g.player.hand=plate;g.interact();assert.equal(g.player.hand,plate);assert.equal(s.item,null);assert.equal(isReadyPlate(plate),true);
+  for(const item of [ready('bread'),{kind:'meat',state:'raw'},{kind:'meat',state:'burnt'},{kind:'plate',dirty:true,parts:[]}]){
+    s.item=item;const before=JSON.stringify([s.item,g.player.hand]);g.interact();assert.equal(JSON.stringify([s.item,g.player.hand]),before);
   }
 });
 
-test('an unplated meal can be carried and stored but must get a plate before delivery',()=>{
-  const game=setup();game.player.hand={kind:'meal',parts:RECIPES[0].parts.map(key=>{const [kind,state]=key.split(':');return {kind,state};})};
-  const meal=game.player.hand,pan=face(game,'pan-a');game.interact();tick(game,25);assert.equal(itemKey(pan.item),itemKey(meal));game.interact();
-  const s=face(game,'serve');game.interact();assert.equal(game.served,0);assert.equal(game.score,0);assert.equal(s.item,meal);
-  game.player.hand={kind:'plate',parts:[]};game.cleanPlates--;game.interact();assert.equal(s.item,null);assert.equal(game.player.hand.kind,'plate');game.interact();
-  assert.equal(game.served,1);assert.equal(game.cleanPlates+game.returningPlates.length,3);
+test('floor drop, pickup and in-hand floor assembly conserve objects and pan progress',()=>{
+  const g=setup();g.player.hand=ready('bread');g.drop();assert.equal(g.player.hand,null);assert.equal(g.groundItems.length,1);g.interact();assert.equal(itemKey(g.player.hand),'bread:ready');assert.equal(g.groundItems.length,0);
+  const floor=g.placeGround(ready('meat'),g.player.x,g.player.z-.7);g.interact();assert.equal(itemKey(g.player.hand),'meal:bread:ready,meat:cooked');assert.ok(!g.groundItems.includes(floor));
+  g.player.hand={kind:'pan',food:{kind:'meat',state:'chopped'},progress:3,heat:0};g.drop();tick(g,8);g.interact();assert.equal(g.player.hand.progress,3);assert.equal(g.player.hand.food.state,'chopped');
 });
 
-test('two chefs have independent inputs and targets while the clock and pans tick only once',()=>{
-  const game=setup();game.setupPlayers(['Lan','Minh']);const [a,b]=game.players;const ax=a.x,bx=b.x;
-  game.stations.find(s=>s.id==='pan-a').item={kind:'meat',state:'chopped'};
-  tick(game,.2,{players:{'chef-1':{x:-1},'chef-2':{x:1}}});
-  assert.ok(a.x<ax-.7);assert.ok(b.x>bx+.7);assert.ok(Math.abs(game.time-179.8)<.0001);
-  assert.ok(Math.abs(game.stations.find(s=>s.id==='pan-a').progress-.2)<.0001);
-  face(game,'bread',a);face(game,'sauce',b);
-  game.withPlayer(a.id,()=>game.interact());game.withPlayer(b.id,()=>game.interact());
-  assert.equal(a.hand.kind,'bread');assert.equal(b.hand.kind,'sauce');assert.equal(a.targetId,'bread');assert.equal(b.targetId,'sauce');
-  const client=setup();client.applySnapshot(game.snapshot(),b.id);assert.equal(client.player.id,b.id);assert.equal(client.target.id,'sauce');assert.equal(client.players.length,2);
-  client.player.hand=null;assert.equal(b.hand.kind,'sauce');
+test('throw lands on floor, a counter, an empty pan, or in a teammate hand',()=>{
+  for(const destination of ['floor','counter','pan','player']){
+    const g=setup();g.setupPlayers(['Lan','Minh']);const [p,q]=g.players;Object.assign(p,{x:-3,z:3});Object.assign(q,{x:0,z:3});p.hand={kind:'meat',state:'chopped'};
+    const target=destination==='floor'?{x:-2,z:4}:destination==='counter'?g.stations.find(s=>s.id==='counter-a'):destination==='pan'?g.stations.find(s=>s.id==='pan-a'):q;
+    const hand=p.hand;assert.equal(g.throwItem(target),true);assert.equal(p.hand,null);assert.equal(g.projectiles[0].item,hand);tick(g,1);
+    assert.equal(g.projectiles.length,0);
+    if(destination==='floor')assert.ok(g.groundItems.some(e=>e.item===hand));
+    if(destination==='counter')assert.equal(target.item,hand);
+    if(destination==='pan')assert.equal(target.item.food,hand);
+    if(destination==='player')assert.equal(q.hand,hand);
+  }
 });
 
-test('simultaneous pickup has one winner and server events identify the acting chef',()=>{
-  const events=[],game=setup();game.onEvent=e=>events.push(e);game.setupPlayers(['A','B']);
-  const s=face(game,'counter-a',game.players[0]);face(game,'counter-a',game.players[1]);s.item=ready('meat');
-  for(const p of game.players)game.withPlayer(p.id,()=>game.interact());
-  assert.equal(game.players.filter(p=>p.hand).length,1);assert.equal(s.item,null);
-  assert.equal(events.find(e=>e.type==='pickup').playerId,'chef-1');
-  game.pause();const snapshot=game.snapshot();tick(game,2,{players:{'chef-1':{x:1},'chef-2':{x:-1}}});assert.deepEqual(game.snapshot(),snapshot);
+test('throwing into a held meal merges; incompatible catches and occupied targets fall to safe floor',()=>{
+  const g=setup();g.setupPlayers(['A','B']);const [p,q]=g.players;Object.assign(p,{x:-2,z:3});Object.assign(q,{x:1,z:3});p.hand=ready('meat');q.hand=ready('bread');g.throwItem(q);tick(g,1);assert.equal(recipeForItem(q.hand).id,'classic');
+  p.hand=ready('bread');g.throwItem(q);tick(g,1);assert.equal(g.groundItems.length,1);assert.equal(recipeForItem(q.hand).id,'classic');
+  const s=g.stations.find(s=>s.id==='counter-a');s.item={kind:'vegetable',state:'raw'};p.hand={kind:'pan',food:null,progress:0,heat:0};g.throwItem(s);tick(g,1);assert.equal(s.item.kind,'vegetable');assert.ok(g.groundItems.some(e=>e.item.kind==='pan'));for(const e of g.groundItems)assert.ok(g.canStand(e.x,e.z,.16));
+});
+
+test('throwing a complete plated order serves and returns the same physical plate',()=>{
+  const g=setup(),s=g.stations.find(s=>s.id==='serve');Object.assign(g.player,{x:7,z:4});
+  const plate=g.stations.find(s=>s.id==='plates').item;g.stations.find(s=>s.id==='plates').item=null;plate.parts=RECIPES[0].parts.map(key=>{const [kind,state]=key.split(':');return {kind,state};});g.player.hand=plate;
+  g.throwItem(s);tick(g,1);assert.equal(g.served,1);assert.equal(plate.dirty,true);assert.equal(g.allItems.filter(i=>i.kind==='plate').length,4);assert.equal(g.player.hand,null);
+});
+
+test('throws reject non-finite payloads, clamp distance, and never lose an out-of-map object',()=>{
+  const g=setup();g.player.hand=ready('bread');for(const p of [null,{}, {x:Infinity,z:0},{x:0,z:NaN}])assert.equal(g.throwItem(p),false);
+  const end=g.throwTarget({x:1e10,z:1e10});assert.ok(Math.hypot(end.x-g.player.x,end.z-g.player.z)<=RULES.throwRange+.1);
+  const bread=g.player.hand;g.throwItem({x:1e10,z:-1e10});tick(g,1.2);assert.ok(g.allItems.includes(bread));
+});
+
+test('two players own independent characters and controls, shared physics ticks only once',()=>{
+  const g=setup();g.setupPlayers(['Lan','Minh']);const [a,b]=g.players,ax=a.x,bx=b.x,pan=g.stations.find(s=>s.id==='pan-a').item;pan.food={kind:'meat',state:'chopped'};
+  tick(g,.2,{players:{'chef-1':{x:-1},'chef-2':{x:1}}});assert.ok(a.x<ax-.9);assert.ok(b.x>bx+.9);assert.ok(Math.abs(g.time-179.8)<1e-7);assert.ok(Math.abs(pan.progress-.2)<1e-7);
+  assert.equal(a.character,'ragged-dog');assert.equal(b.character,'dog-tick');face(g,'bread',a);face(g,'sauce',b);
+  g.withPlayer(a.id,()=>g.interact());g.withPlayer(b.id,()=>g.interact());assert.equal(a.hand.kind,'bread');assert.equal(b.hand.kind,'sauce');
+  g.withPlayer(b.id,()=>g.drop());const snapshot=g.snapshot(),client=setup();client.applySnapshot(snapshot,b.id);assert.equal(client.player.character,'dog-tick');assert.equal(client.groundItems.length,1);assert.equal(client.target.type,'ground');client.groundItems[0].item=null;assert.ok(g.groundItems[0].item);
+});
+
+test('concurrent floor pickup and pan loading have a single owner and no duplication',()=>{
+  const g=setup();g.setupPlayers(['A','B']);g.placeGround(ready('meat'),0,2.5);
+  for(const p of g.players){Object.assign(p,{x:0,z:3.2,facingX:0,facingZ:-1});g.withPlayer(p.id,()=>g.interact());}
+  assert.equal(g.groundItems.length,0);assert.equal(g.players.filter(p=>p.hand).length,1);
+  const s=g.stations.find(s=>s.id==='pan-a');
+  for(const p of g.players){face(g,s.id,p);p.hand={kind:'meat',state:'chopped'};g.withPlayer(p.id,()=>g.interact());}
+  assert.equal(s.item.food.state,'chopped');assert.equal(g.players.filter(p=>p.hand).length,1);
 });

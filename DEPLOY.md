@@ -9,7 +9,7 @@ Bản hiện tại đã có phòng online cho **hai thiết bị**. Máy chủ N
 3. Khi dịch vụ Live, mở địa chỉ HTTPS của dịch vụ (`…onrender.com`). Game tự dùng `wss://` trên cùng địa chỉ; không cần nhập URL backend, mở cổng router hoặc cấu hình CORS. Server đã bind `0.0.0.0` và đọc biến `PORT`. [Web Services](https://render.com/docs/web-services), [WebSocket](https://render.com/docs/websocket).
 4. Bạn: **Chơi cùng bạn → tên → Tạo phòng mới → Sao chép liên kết**. Bạn bè: mở liên kết trên Safari iPad → tên → Vào phòng. Đủ 2/2, chủ phòng bắt đầu. Hai máy có thể dùng mạng khác nhau.
 
-Gói Free phù hợp thử nghiệm: ngủ sau 15 phút không có lưu lượng vào và khởi động lại có thể mất khoảng một phút. Kiểm tra [điều kiện và giới hạn Free](https://render.com/docs/free) trước khi chọn gói; gói trả phí là lựa chọn sau nếu cần mở ngay và ổn định hơn. Chưa có deployment hoặc domain public được tạo sẵn trong workspace này.
+Gói Free phù hợp thử nghiệm: ngủ sau 15 phút không có lưu lượng vào và khởi động lại có thể mất khoảng một phút. Kiểm tra [điều kiện và giới hạn Free](https://render.com/docs/free) trước khi chọn gói; gói trả phí là lựa chọn sau nếu cần mở ngay và ổn định hơn. Dịch vụ hiện tại: https://cookingdual.onrender.com/ — service ID `srv-dahdfjuq1p3s73eg74p0`, repository `ggcaochihieu602/CookingDual`, nhánh `main`. Khi cập nhật mã nguồn, theo dõi deployment trong Render và xác nhận `/health` cùng kết nối phòng. Triển khai lại làm mất các phòng đang nằm trong RAM.
 
 ## iPad
 

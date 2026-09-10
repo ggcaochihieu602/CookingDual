@@ -1,277 +1,285 @@
 import { FLOOR_AREAS, SPAWN, STATIONS } from './level.js';
 export { STATIONS, FLOOR_AREAS, SPAWN };
-export const RULES = Object.freeze({ duration: 180, chop: 2.2, cook: 6, burn: 14, wash: 2, clean: 1.2, discard: .65, orderLife: 100, cadence: 26, speed: 4.2, radius: 0.28, stars: [100, 300, 550] });
-export const PLATE_PARTS = Object.freeze(['bread:ready', 'meat:cooked', 'vegetable:chopped', 'sauce:ready']);
-export const RECIPES = Object.freeze([
-  { id: 'herb', name: 'Bánh mì thịt rau', title: 'Thịt & rau', note: 'Có rau · Không cay', parts: PLATE_PARTS.slice(0, 3) },
-  { id: 'classic', name: 'Bánh mì thịt', title: 'Thịt nguyên bản', note: 'Không rau · Không cay', parts: PLATE_PARTS.slice(0, 2) },
-  { id: 'spicy', name: 'Bánh mì thịt cay', title: 'Thịt & tương ớt', note: 'Không rau · Có tương ớt', parts: [PLATE_PARTS[0], PLATE_PARTS[1], PLATE_PARTS[3]] },
-  { id: 'loaded', name: 'Bánh mì đầy đủ', title: 'Bánh mì đầy đủ', note: 'Có rau · Có tương ớt', parts: [...PLATE_PARTS] },
-].map(recipe => Object.freeze({ ...recipe, parts: Object.freeze(recipe.parts) })));
-export const getRecipe = id => RECIPES.find(recipe => recipe.id === id);
-export const isChoppable = item => item?.state === 'raw' && ['meat', 'vegetable'].includes(item.kind);
-export const isPanFood = item => item?.kind === 'meat' && ['chopped', 'cooked', 'burnt'].includes(item.state);
-
-export const isAssembly = item => ['plate','meal'].includes(item?.kind);
-export const itemParts = item => !item ? [] : isAssembly(item) ? item.parts : [item];
-export const itemKey = item => item ? isAssembly(item) ? `${item.kind}:${item.parts.map(itemKey).sort().join(',')}` : `${item.kind}:${item.state}` : '';
-export function recipeForItem(item) {
-  if (!isAssembly(item)) return undefined;
-  const parts = new Set(item.parts.map(itemKey));
-  if (parts.size !== item.parts.length) return undefined;
-  return RECIPES.find(recipe => parts.size === recipe.parts.length && recipe.parts.every(part => parts.has(part)));
+export const RULES=Object.freeze({duration:180,chop:2.2,cook:6,burn:21,burnWarning:14,wash:2,discard:.65,orderLife:100,cadence:26,speed:5.46,radius:.30,characterScale:1.3,dashSpeed:11.44,dashDuration:.19,throwRange:8,fireSpread:6,extinguish:1.2,stars:[100,300,550]});
+export const PLATE_PARTS=Object.freeze(['bread:ready','meat:cooked','vegetable:chopped','sauce:ready']);
+export const RECIPES=Object.freeze([
+  {id:'herb',name:'Bánh mì thịt rau',title:'Thịt & rau',note:'Có rau · Không cay',parts:PLATE_PARTS.slice(0,3)},
+  {id:'classic',name:'Bánh mì thịt',title:'Thịt nguyên bản',note:'Không rau · Không cay',parts:PLATE_PARTS.slice(0,2)},
+  {id:'spicy',name:'Bánh mì thịt cay',title:'Thịt & tương ớt',note:'Không rau · Có tương ớt',parts:[PLATE_PARTS[0],PLATE_PARTS[1],PLATE_PARTS[3]]},
+  {id:'loaded',name:'Bánh mì đầy đủ',title:'Bánh mì đầy đủ',note:'Có rau · Có tương ớt',parts:[...PLATE_PARTS]},
+].map(recipe=>Object.freeze({...recipe,parts:Object.freeze(recipe.parts)})));
+export const getRecipe=id=>RECIPES.find(recipe=>recipe.id===id);
+export const isChoppable=item=>item?.state==='raw'&&['meat','vegetable'].includes(item.kind);
+export const isPanFood=item=>item?.kind==='meat'&&['chopped','cooked','burnt'].includes(item.state);
+export const isAssembly=item=>['plate','meal'].includes(item?.kind);
+export const itemParts=item=>!item?[]:isAssembly(item)?item.parts:[item];
+export const itemKey=item=>!item?'':item.kind==='pan'?`pan:${itemKey(item.food)}`:isAssembly(item)?`${item.kind}${item.dirty?'-dirty':''}:${item.parts.map(itemKey).sort().join(',')}`:`${item.kind}:${item.state||''}`;
+export function recipeForItem(item){
+  if(!isAssembly(item)||item.dirty)return undefined;
+  const parts=new Set(item.parts.map(itemKey));if(parts.size!==item.parts.length)return undefined;
+  return RECIPES.find(recipe=>parts.size===recipe.parts.length&&recipe.parts.every(part=>parts.has(part)));
 }
-export const recipeForPlate = item => item?.kind === 'plate' ? recipeForItem(item) : undefined;
-export const isReadyPlate = item => Boolean(recipeForPlate(item));
-export function itemName(item) {
-  if (!item) return 'Tay trống';
-  if (item.kind === 'meal') return recipeForItem(item) ? `${recipeForItem(item).name} · chưa có đĩa` : `Phần nhân · ${item.parts.length} nguyên liệu`;
-  if (item.kind === 'plate') return recipeForPlate(item)?.name || (item.parts.length ? `Đĩa · thiếu ${['bread', 'meat'].filter(kind => !item.parts.some(p => p.kind === kind)).map(kind => kind === 'bread' ? 'bánh mì' : 'thịt chín').join(' + ')}` : 'Đĩa sạch');
-  const names = { bread: 'Bánh mì', meat: 'Thịt', vegetable: 'Rau củ', sauce: 'Tương ớt' };
-  return `${names[item.kind]}${({ raw: ' sống', chopped: ' đã cắt', cooked: ' đã chín', burnt: ' bị cháy' })[item.state] || ''}`;
+export const recipeForPlate=item=>item?.kind==='plate'?recipeForItem(item):undefined;
+export const isReadyPlate=item=>Boolean(recipeForPlate(item));
+export function itemName(item){
+  if(!item)return 'Tay trống';
+  if(item.kind==='extinguisher')return 'Bình chữa cháy';
+  if(item.kind==='pan')return item.food?`Chảo · ${itemName(item.food)}`:'Chảo rỗng';
+  if(item.kind==='plate'&&item.dirty)return 'Đĩa bẩn';
+  if(item.kind==='meal')return recipeForItem(item)?`${recipeForItem(item).name} · chưa có đĩa`:`Phần nhân · ${item.parts.length} nguyên liệu`;
+  if(item.kind==='plate')return recipeForPlate(item)?.name||(item.parts.length?`Đĩa · ${item.parts.length} nguyên liệu`:'Đĩa sạch');
+  return `${({bread:'Bánh mì',meat:'Thịt',vegetable:'Rau củ',sauce:'Tương ớt'})[item.kind]||item.kind}${({raw:' sống',chopped:' đã cắt',cooked:' đã chín',burnt:' bị cháy'})[item.state]||''}`;
 }
-
+const freshPan=()=>({kind:'pan',food:null,progress:0,heat:0});
+const snapshotKeys=['phase','resumePhase','time','countdown','score','served','missed','combo','maxCombo','orders','players','groundItems','projectiles'];
+const finitePoint=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.z);
+const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
+const isReadyPart=item=>PLATE_PARTS.includes(itemKey(item));
+function assembled(a,b){
+  if(!a||!b||a.dirty||b.dirty||(a.kind==='plate'&&b.kind==='plate'))return null;
+  const parts=[...itemParts(a),...itemParts(b)];
+  if(!parts.every(isReadyPart)||new Set(parts.map(p=>p.kind)).size!==parts.length)return null;
+  return {kind:a.kind==='plate'||b.kind==='plate'?'plate':'meal',parts};
+}
 export class KitchenGame {
-  constructor(onEvent = () => {}) { this.onEvent = onEvent; this.best = 0; this.reset('menu'); }
-  reset(phase = 'countdown') {
-    this.phase = phase; this.resumePhase = 'playing'; this.time = RULES.duration; this.countdown = 3;
-    this.player = { id:'chef-1', name:'Bạn', color:'#dc785c', ...SPAWN, facingX: 0, facingZ: phase === 'menu' ? 1 : -1, hand: null, walking: false, dash: 0, cooldown: 0, targetId:null, work:null };
-    this.players = [this.player]; this.actorId = null;
-    this.stations = STATIONS.map(s => ({ ...s, item: null, progress: 0, heat: 0 }));
-    this.orders = []; this.orderId = 0; this.orderClock = 0; this.score = 0; this.served = 0; this.missed = 0;
-    this.combo = 0; this.maxCombo = 0; this.cleanPlates = 3; this.dirtyPlates = 0; this.returningPlates = [];
-    this.target = null; this.work = null; this.guide = new Set(); this.lastMessage = ''; this.addOrder();
-    this.emit('reset');
+  constructor(onEvent=()=>{}){this.onEvent=onEvent;this.best=0;this.reset('menu');}
+  reset(phase='countdown'){
+    this.phase=phase;this.resumePhase='playing';this.time=RULES.duration;this.countdown=3;
+    this.player={id:'chef-1',character:'ragged-dog',name:'Bạn',color:'#dc785c',...SPAWN,facingX:0,facingZ:phase==='menu'?1:-1,hand:null,walking:false,dash:0,cooldown:0,targetId:null,work:null,spraying:false};
+    this.players=[this.player];this.actorId=null;
+    this.stations=STATIONS.map(s=>({...s,item:s.type==='pan'?freshPan():s.initial==='plate'?{kind:'plate',parts:[]}:s.initial==='extinguisher'?{kind:'extinguisher'}:null,progress:0,heat:0,fire:0,fireClock:0,wet:0}));
+    this.groundItems=[];this.projectiles=[];this.entityId=0;
+    this.orders=[];this.orderId=0;this.orderClock=0;this.score=0;this.served=0;this.missed=0;
+    this.combo=0;this.maxCombo=0;this.target=null;this.work=null;this.guide=new Set();this.lastMessage='';this.addOrder();this.emit('reset');
   }
-  emit(type, data = {}) { this.onEvent({ type, playerId:this.actorId, ...data }); }
-  setupPlayers(names) {
+  get allItems(){return [...this.stations.map(s=>s.item),...this.players.map(p=>p.hand),...this.groundItems.map(g=>g.item),...this.projectiles.map(p=>p.item)].filter(Boolean);}
+  get cleanPlates(){return this.allItems.filter(i=>i.kind==='plate'&&!i.dirty&&!i.parts.length).length;}
+  get dirtyPlates(){return this.allItems.filter(i=>i.kind==='plate'&&i.dirty).length;}
+  get returningPlates(){return [];}
+  emit(type,data={}){this.onEvent({type,playerId:this.actorId,...data});}
+  say(message){this.lastMessage=message;this.emit('message',{message});}
+  mark(step){this.guide.add(step);}
+  setupPlayers(names){
     const base=this.player;
-    this.players=names.slice(0,2).map((name,index)=>({...base,id:`chef-${index+1}`,name,color:index?'#4c9fbc':'#dc785c',x:names.length>1?(index? .8:-.8):0,hand:null,work:null,targetId:null}));
-    this.player=this.players[0];
+    this.players=names.slice(0,2).map((name,index)=>({...base,id:`chef-${index+1}`,character:index?'dog-tick':'ragged-dog',name,color:index?'#6f916b':'#dc785c',x:names.length>1?(index?.8:-.8):0,hand:null,work:null,targetId:null,spraying:false}));this.player=this.players[0];
   }
-  withPlayer(id, action) {
+  findTarget(id){return this.stations.find(s=>s.id===id)||this.groundItems.find(s=>s.id===id)||null;}
+  withPlayer(id,action){
     const player=this.players.find(p=>p.id===id);if(!player)return;
     const previous={player:this.player,target:this.target,work:this.work,actorId:this.actorId};
-    this.player=player;this.target=this.stations.find(s=>s.id===player.targetId)||null;this.work=player.work;this.actorId=id;
-    try { return action(); } finally {
-      player.targetId=this.target?.id||null;player.work=this.work;
-      Object.assign(this,previous);
-      if(this.player===player){this.target=this.stations.find(s=>s.id===player.targetId)||null;this.work=player.work;}
+    this.player=player;this.target=this.findTarget(player.targetId);this.work=player.work;this.actorId=id;
+    try{return action();}finally{
+      player.targetId=this.target?.id||null;player.work=this.work;Object.assign(this,previous);
+      if(this.player===player){this.target=this.findTarget(player.targetId);this.work=player.work;}
     }
   }
-  snapshot() {
-    const data={};
-    for(const key of ['phase','resumePhase','time','countdown','score','served','missed','combo','maxCombo','cleanPlates','dirtyPlates','returningPlates','orders','players'])data[key]=this[key];
-    data.stations=this.stations.map(({id,item,progress,heat})=>({id,item,progress,heat}));data.guide=[...this.guide];return structuredClone(data);
+  snapshot(){const data={};for(const key of snapshotKeys)data[key]=this[key];data.stations=this.stations.map(({id,item,progress,heat,fire,wet})=>({id,item,progress,heat,fire,wet}));data.guide=[...this.guide];return structuredClone(data);}
+  applySnapshot(data,playerId){
+    for(const key of snapshotKeys)this[key]=data[key];
+    for(const state of data.stations){const s=this.stations.find(s=>s.id===state.id);if(s)Object.assign(s,state);}
+    this.player=this.players.find(p=>p.id===playerId)||this.players[0];this.target=this.findTarget(this.player.targetId);this.work=this.player.work;this.guide=new Set(data.guide);
   }
-  applySnapshot(data,playerId) {
-    for(const key of ['phase','resumePhase','time','countdown','score','served','missed','combo','maxCombo','cleanPlates','dirtyPlates','returningPlates','orders','players'])this[key]=data[key];
-    for(const state of data.stations){const station=this.stations.find(s=>s.id===state.id);if(station)Object.assign(station,state);}
-    this.player=this.players.find(p=>p.id===playerId)||this.players[0];
-    this.target=this.stations.find(s=>s.id===this.player.targetId)||null;this.work=this.player.work;this.guide=new Set(data.guide);
+  addOrder(){if(this.orders.length>=3)return;const recipe=RECIPES[this.orderId%RECIPES.length];this.orders.push({id:++this.orderId,recipeId:recipe.id,remaining:RULES.orderLife,total:RULES.orderLife});}
+  start(){this.reset();}
+  pause(){if(!['playing','countdown'].includes(this.phase))return;this.resumePhase=this.phase;this.phase='paused';for(const p of this.players){p.walking=false;p.work=null;p.spraying=false;}this.work=null;this.emit('pause');}
+  resume(){if(this.phase==='paused'){this.phase=this.resumePhase;this.emit('resume');}}
+  canStand(x,z,r=RULES.radius){
+    if(!finitePoint({x,z})||!FLOOR_AREAS.some(a=>Math.abs(x-a.x)<=a.width/2-r&&Math.abs(z-a.z)<=a.depth/2-r))return false;
+    return !this.stations.some(s=>{const dx=Math.max(0,Math.abs(x-s.x)-s.width/2),dz=Math.max(0,Math.abs(z-s.z)-s.depth/2);return dx*dx+dz*dz<r*r;});
   }
-  say(message) { this.lastMessage = message; this.emit('message', { message }); }
-  addOrder() {
-    if (this.orders.length >= 3) return;
-    const recipe = RECIPES[this.orderId % RECIPES.length];
-    this.orders.push({ id: ++this.orderId, recipeId: recipe.id, remaining: RULES.orderLife, total: RULES.orderLife });
-  }
-  start() { this.reset(); }
-  pause() { if (['playing', 'countdown'].includes(this.phase)) { this.resumePhase = this.phase; this.phase = 'paused'; for(const p of this.players){p.walking=false;p.work=null;} this.work = null; this.emit('pause'); } }
-  resume() { if (this.phase === 'paused') { this.phase = this.resumePhase; this.emit('resume'); } }
-  mark(step) { this.guide.add(step); }
-  canStand(x, z) {
-    const r = RULES.radius;
-    if (!FLOOR_AREAS.some(a => Math.abs(x - a.x) <= a.width / 2 - r && Math.abs(z - a.z) <= a.depth / 2 - r)) return false;
-    return !this.stations.some(s => {
-      const nx = Math.max(s.x - s.width / 2, Math.min(x, s.x + s.width / 2));
-      const nz = Math.max(s.z - s.depth / 2, Math.min(z, s.z + s.depth / 2));
-      return (x - nx) ** 2 + (z - nz) ** 2 < r * r;
-    });
-  }
-  selectTarget() {
-    const p = this.player;
-    let chosen = null, best = Infinity;
-    for (const s of this.stations) {
-      const dx = s.x - p.x, dz = s.z - p.z, distance = Math.hypot(dx, dz);
-      const dot = (dx * p.facingX + dz * p.facingZ) / (distance || 1);
-      const edgeDistance = Math.hypot(Math.max(0, Math.abs(dx) - s.width / 2), Math.max(0, Math.abs(dz) - s.depth / 2));
-      if (edgeDistance > 0.68 || dot < 0.32) continue;
-      const rank = distance + (1 - dot) * 0.75;
-      if (rank < best) { best = rank; chosen = s; }
+  selectTarget(){
+    const p=this.player;let chosen=null,best=Infinity;
+    for(const s of [...this.stations,...this.groundItems]){
+      if(s.type==='ground'&&!s.item)continue;
+      const dx=s.x-p.x,dz=s.z-p.z,d=Math.hypot(dx,dz),dot=(dx*p.facingX+dz*p.facingZ)/(d||1);
+      const edge=Math.hypot(Math.max(0,Math.abs(dx)-(s.width||.25)/2),Math.max(0,Math.abs(dz)-(s.depth||.25)/2));
+      if(s.type==='ground'?(d>1.22||(d>.42&&dot<.1)):(edge>.73||dot<.28))continue;
+      const rank=edge+(1-dot)*.40+(s.type==='ground'?-.10:0);if(rank<best){best=rank;chosen=s;}
     }
-    this.target = chosen;
-    return chosen;
+    this.target=chosen;this.player.targetId=chosen?.id||null;return chosen;
   }
-  dash() {
-    if (this.phase !== 'playing' || this.player.cooldown > 0 || this.work) return;
-    this.player.dash = 0.19; this.player.cooldown = 1.1; this.emit('dash');
+  dash(){if(this.phase!=='playing'||this.work)return;this.player.dash=RULES.dashDuration;this.player.cooldown=0;this.emit('dash');}
+  stepPlayer(dt,input={}){
+    const p=this.player;let dx=Number.isFinite(input.x)?input.x:0,dz=Number.isFinite(input.z)?input.z:0;
+    const magnitude=Math.hypot(dx,dz);if(magnitude>1){dx/=magnitude;dz/=magnitude;}p.walking=magnitude>.05;
+    if(p.walking){p.facingX=dx/Math.hypot(dx,dz);p.facingZ=dz/Math.hypot(dx,dz);}p.cooldown=0;
+    if(input.dash&&p.dash<=0)this.dash();
+    if(p.dash>0){dx=p.facingX;dz=p.facingZ;p.walking=true;}
+    const speed=p.dash>0?RULES.dashSpeed:RULES.speed;p.dash=Math.max(0,p.dash-dt);
+    const slices=Math.max(1,Math.ceil(speed*dt/.08));
+    for(let i=0;i<slices;i++){const mx=dx*speed*dt/slices,mz=dz*speed*dt/slices;if(this.canStand(p.x+mx,p.z))p.x+=mx;if(this.canStand(p.x,p.z+mz))p.z+=mz;}
+    this.selectTarget();this.work=null;p.spraying=false;
+    if(input.work&&(p.hand?.kind==='extinguisher'||!p.walking))this.processWork(dt);
+    p.work=this.work;p.targetId=this.target?.id||null;
   }
-  stepPlayer(dt, input = {}) {
-    const p = this.player;
-    let dx = input.x || 0, dz = input.z || 0;
-    const magnitude = Math.hypot(dx, dz);
-    if (magnitude > 1) { dx /= magnitude; dz /= magnitude; }
-    p.walking = magnitude > 0.05;
-    if (p.walking) { p.facingX = dx / Math.hypot(dx, dz); p.facingZ = dz / Math.hypot(dx, dz); }
-    p.cooldown = Math.max(0, p.cooldown - dt);
-    if (p.dash > 0) { dx = p.facingX; dz = p.facingZ; p.walking = true; }
-    const speed = p.dash > 0 ? 8.8 : RULES.speed;
-    p.dash = Math.max(0, p.dash - dt);
-    // Small collision steps keep a dash from passing through a counter.
-    const slices = Math.max(1, Math.ceil(speed * dt / 0.08));
-    for (let i = 0; i < slices; i++) {
-      const mx = dx * speed * dt / slices, mz = dz * speed * dt / slices;
-      if (this.canStand(p.x + mx, p.z)) p.x += mx;
-      if (this.canStand(p.x, p.z + mz)) p.z += mz;
+  tick(dt,input={}){
+    if(!Number.isFinite(dt)||dt<=0)return;dt=Math.min(dt,.05);
+    if(this.phase==='countdown'){const before=Math.ceil(this.countdown);this.countdown-=dt;if(before!==Math.ceil(this.countdown))this.emit('count',{value:Math.ceil(this.countdown)});if(this.countdown<=0){this.phase='playing';this.emit('begin');}return;}
+    if(this.phase!=='playing')return;this.time=Math.max(0,this.time-dt);
+    if(this.time<=0){this.phase='results';this.work=null;for(const p of this.players){p.walking=false;p.work=null;p.spraying=false;}this.best=Math.max(this.best,this.score);this.emit('finish');return;}
+    if(input.players){for(const p of this.players)this.withPlayer(p.id,()=>this.stepPlayer(dt,input.players[p.id]||{}));}else this.stepPlayer(dt,input);
+    this.tickCooking(dt);this.tickFire(dt);this.tickThrows(dt);
+    for(const order of this.orders)order.remaining-=dt;
+    const expired=this.orders.filter(o=>o.remaining<=0);
+    if(expired.length){this.orders=this.orders.filter(o=>o.remaining>0);this.missed+=expired.length;this.combo=0;this.score=Math.max(0,this.score-15*expired.length);this.emit('expired');}
+    this.orderClock+=dt;if(this.orderClock>=RULES.cadence&&this.orders.length<3){this.addOrder();this.orderClock=0;this.emit('order');}if(!this.orders.length){this.addOrder();this.orderClock=0;}
+  }
+  tickCooking(dt){
+    for(const s of this.stations){
+      const pan=s.item;if(s.type!=='pan'||pan?.kind!=='pan'||!pan.food){s.heat=0;continue;}
+      const food=pan.food;if(!isPanFood(food)||s.fire>0)continue;
+      if(food.state==='chopped'){pan.progress+=dt;if(pan.progress>=RULES.cook){food.state='cooked';pan.heat=0;this.mark('cook');this.emit('cooked',{station:s.id});}}
+      else if(food.state==='cooked'){
+        const previous=pan.heat;pan.heat+=dt;
+        if(pan.heat>=RULES.burnWarning&&Math.floor(previous)!==Math.floor(pan.heat))this.emit('burn-warning',{station:s.id});
+        if(pan.heat>=RULES.burn){food.state='burnt';pan.progress=0;s.fire=1;s.fireClock=0;this.emit('burnt',{station:s.id});this.say('Cháy bếp! Cầm bình chữa cháy và giữ nút xịt.');}
+      }s.heat=pan.heat;
     }
-    this.selectTarget(); this.work = null;
-    if (input.work && !p.walking) this.processWork(dt);
-    p.targetId = this.target?.id || null; p.work = this.work;
   }
-  tick(dt, input = {}) {
-    if (!Number.isFinite(dt) || dt <= 0) return;
-    dt = Math.min(dt, 0.05);
-    if (this.phase === 'countdown') {
-      const before = Math.ceil(this.countdown); this.countdown -= dt;
-      if (before !== Math.ceil(this.countdown)) this.emit('count', { value: Math.ceil(this.countdown) });
-      if (this.countdown <= 0) { this.phase = 'playing'; this.emit('begin'); }
-      return;
-    }
-    if (this.phase !== 'playing') return;
-    this.time = Math.max(0, this.time - dt);
-    if (this.time <= 0) { this.phase = 'results'; this.work = null; for(const p of this.players){p.walking=false;p.work=null;} this.best = Math.max(this.best, this.score); this.emit('finish'); return; }
-    if (input.players) {
-      for (const player of this.players) this.withPlayer(player.id, () => this.stepPlayer(dt, input.players[player.id] || {}));
-    } else this.stepPlayer(dt, input);
-    for (const s of this.stations) {
-      if (s.type !== 'pan' || !isPanFood(s.item)) continue;
-      if (s.item.state === 'chopped') {
-        s.progress += dt;
-        if (s.progress >= RULES.cook) { s.item.state = 'cooked'; s.heat = 0; this.mark('cook'); this.emit('cooked', { station: s.id }); }
-      } else if (s.item.state === 'cooked') {
-        s.heat += dt;
-        if (s.heat >= RULES.burn) { s.item.state = 'burnt'; s.progress = 0; this.emit('burnt', { station: s.id }); this.say('Thịt cháy rồi! Giữ E ở bếp để dọn chảo.'); }
+  tickFire(dt){
+    const spread=[];
+    for(const s of this.stations){
+      s.wet=Math.max(0,s.wet-dt);if(s.fire<=0)continue;s.fireClock+=dt;
+      if(s.fireClock<RULES.fireSpread)continue;s.fireClock=0;
+      for(const adjacent of this.stations){
+        if(adjacent===s||adjacent.fire>0||adjacent.wet>0)continue;
+        const gx=Math.max(0,Math.abs(s.x-adjacent.x)-(s.width+adjacent.width)/2),gz=Math.max(0,Math.abs(s.z-adjacent.z)-(s.depth+adjacent.depth)/2);
+        if(Math.hypot(gx,gz)<.09)spread.push(adjacent);
       }
     }
-    for (const order of this.orders) order.remaining -= dt;
-    const expired = this.orders.filter(o => o.remaining <= 0);
-    if (expired.length) {
-      this.orders = this.orders.filter(o => o.remaining > 0); this.missed += expired.length; this.combo = 0;
-      this.score = Math.max(0, this.score - 15 * expired.length); this.emit('expired'); this.say('Một đơn đã hết giờ. Tiếp tục với đơn tiếp theo nhé!');
-    }
-    this.orderClock += dt;
-    if (this.orderClock >= RULES.cadence && this.orders.length < 3) { this.addOrder(); this.orderClock = 0; this.emit('order'); }
-    if (!this.orders.length) { this.addOrder(); this.orderClock = 0; }
-    this.returningPlates = this.returningPlates.map(t => t - dt);
-    const returned = this.returningPlates.filter(t => t <= 0).length;
-    if (returned) { this.dirtyPlates += returned; this.returningPlates = this.returningPlates.filter(t => t > 0); this.emit('dirty'); }
+    for(const s of spread){s.fire=1;s.fireClock=0;this.emit('fire-spread',{station:s.id});}
   }
-  context(s = this.target) {
-    if (!s) return { label: 'Đến gần và hướng về một quầy', key: '', mode: 'none' };
-    const hand = this.player.hand;
-    if (s.item && hand) return { label: s.item.kind === 'plate' || hand.kind === 'plate' ? 'Ghép thức ăn vào đĩa' : 'Ghép các nguyên liệu đã sẵn sàng', key: 'Space', mode: 'tap' };
-    if (s.item) {
-      if (s.type === 'board' && isChoppable(s.item)) return { label: 'Giữ để cắt · Space để lấy', key: 'E', mode: 'hold' };
-      if (s.type === 'pan' && s.item.state === 'burnt') return { label: 'Giữ để dọn chảo cháy', key: 'E', mode: 'hold' };
-      if (s.type === 'trash' && (s.item.kind !== 'plate' || s.item.parts.length)) return { label: 'Giữ để bỏ thức ăn · giữ lại đĩa', key: 'E', mode: 'hold' };
-      return { label: `Lấy ${itemName(s.item).toLowerCase()}`, key: 'Space', mode: 'tap' };
-    }
-    if (hand) {
-      if (s.type === 'serve' && isReadyPlate(hand)) return { label: 'Giao bánh mì', key: 'Space', mode: 'tap' };
-      return { label: `Đặt ${itemName(hand).toLowerCase()} vào ô trống`, key: 'Space', mode: 'tap' };
-    }
-    if (s.type === 'source') return { label: `Lấy ${s.label.toLowerCase()}`, key: 'Space', mode: 'tap' };
-    if (s.type === 'plates') return { label: this.cleanPlates ? `Lấy đĩa sạch · còn ${this.cleanPlates}` : 'Hết đĩa — hãy rửa tại bồn', key: 'Space', mode: 'tap' };
-    if (s.type === 'sink') return { label: this.dirtyPlates ? `Rửa đĩa · ${this.dirtyPlates} đĩa bẩn` : 'Chưa có đĩa bẩn', key: 'E', mode: this.dirtyPlates ? 'hold' : 'none' };
-    return { label: 'Ô trống · có thể đặt đồ hoặc đĩa', key: 'Space', mode: 'tap' };
+  context(s=this.target){
+    const hand=this.player.hand;
+    if(hand?.kind==='extinguisher')return {label:'Giữ để xịt chữa cháy',key:'E',mode:'hold'};
+    if(s?.fire>0)return {label:'Dập lửa trước khi lấy đồ',key:'',mode:'none'};
+    if(!s)return {label:hand?'Thả xuống đất':'Đến gần vật phẩm hoặc quầy',key:hand?'Space':'',mode:hand?'tap':'none'};
+    if(s.type==='board'&&isChoppable(s.item)&&!hand)return {label:'Giữ để cắt · Space để lấy',key:'E',mode:'hold'};
+    if(s.type==='sink'&&s.item?.dirty&&!hand)return {label:'Giữ để rửa đĩa',key:'E',mode:'hold'};
+    if(s.type==='trash'&&s.item&&!hand)return {label:'Giữ để bỏ thức ăn',key:'E',mode:'hold'};
+    if(s.type==='serve'&&isReadyPlate(hand)&&!s.item)return {label:'Giao món',key:'Space',mode:'tap'};
+    return {label:hand?'Đặt / ghép':s.item?`Lấy ${itemName(s.item)}`:s.type==='source'?`Lấy ${s.label}`:'Bàn trống',key:'Space',mode:'tap'};
   }
-  merge(a, b) {
-    const plate = a?.kind === 'plate' ? a : b?.kind === 'plate' ? b : null;
-    if (!a || !b || (a.kind === 'plate' && b.kind === 'plate')) { this.say('Không thể ghép hai đĩa.'); return false; }
-    const parts = plate ? [...plate.parts,...itemParts(plate===a?b:a)] : [...itemParts(a), ...itemParts(b)];
-    if (!parts.every(part => PLATE_PARTS.includes(itemKey(part)))) { this.say('Cần cắt rau và nấu chín thịt trước khi ghép món.'); return false; }
-    if (new Set(parts.map(part => part.kind)).size !== parts.length) { this.say('Món đã có nguyên liệu này rồi.'); return false; }
-    const result = plate || {kind:'meal',parts:[]}; result.parts = parts;
-    this.mark(plate ? 'plate' : 'assemble'); this.emit('assemble'); return result;
+  merge(a,b){
+    const result=assembled(a,b);if(!result){this.say(a?.dirty||b?.dirty?'Cần rửa đĩa trước.':'Chỉ ghép nguyên liệu đã sẵn sàng và chưa có trong món.');return false;}
+    const plate=a.kind==='plate'?a:b.kind==='plate'?b:null;
+    if(plate){plate.parts=result.parts;this.mark('plate');}else this.mark('assemble');this.emit('assemble');return plate||result;
   }
-  interact() {
-    if (this.phase !== 'playing') return;
-    const s = this.selectTarget(), p = this.player;
-    if (!s) { this.say('Đứng gần và hướng về quầy để tương tác.'); return; }
-    const hand = p.hand;
-    // The visible work slot always wins over the equipment's supply/action.
-    // Never replace an occupied slot or draw hidden inventory through it.
-    if (s.item) {
-      if (!hand) { p.hand = s.item; s.item = null; s.progress = 0; s.heat = 0; this.emit('pickup'); return; }
-      const result = this.merge(s.item, hand);
-      if (result) {
-        if (hand.kind === 'plate') { p.hand = result; s.item = null; }
-        else { s.item = result; p.hand = null; }
-        s.progress = 0; s.heat = 0;
+  clearSlot(s){s.item=null;s.progress=0;s.heat=0;if(s.type==='ground')this.groundItems=this.groundItems.filter(g=>g.id!==s.id);}
+  emptyPan(pan){pan.food=null;pan.progress=0;pan.heat=0;}
+  putInPan(pan,item){if(pan.food||!isPanFood(item)||item.state==='burnt')return false;pan.food=item;pan.progress=0;pan.heat=0;return true;}
+  discard(item){if(item.kind==='extinguisher')return item;if(item.kind==='pan'){this.emptyPan(item);return item;}if(item.kind==='plate'){item.parts=[];return item;}return null;}
+  interact(){
+    if(this.phase!=='playing')return;const s=this.selectTarget(),p=this.player,hand=p.hand;
+    if(!s){if(hand)this.drop();return;}
+    if(s.fire>0){this.say('Cần dập lửa trước khi thao tác ở ô này.');return;}
+    if(s.item){
+      if(!hand){p.hand=s.item;this.clearSlot(s);this.emit('pickup');return;}
+      if(hand.kind==='pan'){
+        if(!hand.food&&this.putInPan(hand,s.item)){this.clearSlot(s);this.emit('place');return;}
+        if(hand.food?.state==='cooked'){const result=this.merge(hand.food,s.item);if(result){s.item=result;s.progress=0;this.emptyPan(hand);}}return;
       }
+      if(s.item.kind==='pan'){
+        const pan=s.item;if(this.putInPan(pan,hand)){p.hand=null;this.emit(s.type==='pan'?'sizzle':'place');return;}
+        if(pan.food?.state==='cooked'){const result=this.merge(hand,pan.food);if(result){p.hand=result;this.emptyPan(pan);}}
+        else this.say(pan.food?'Thịt chưa chín hoặc đã cháy.':'Cho thịt đã cắt vào chảo.');return;
+      }
+      const result=this.merge(s.item,hand);
+      if(result){
+        // A resting plate stays put. Unplated combinations stay in the chef's hand.
+        if(s.item.kind==='plate'){s.item=result;p.hand=null;s.progress=0;}else{p.hand=result;this.clearSlot(s);}
+      }return;
+    }
+    if(hand){
+      if(s.type==='trash'){p.hand=this.discard(hand);this.emit('discard');return;}
+      if(s.type==='serve'&&isReadyPlate(hand)){if(this.deliverItem(hand,s))p.hand=null;return;}
+      s.item=hand;p.hand=null;s.progress=0;s.heat=0;this.emit('place');return;
+    }
+    if(s.type==='source'){p.hand=this.sourceItem(s);this.mark(`take-${s.ingredient}`);this.emit('pickup');}
+  }
+  sourceItem(s){return {kind:s.ingredient,state:['bread','sauce'].includes(s.ingredient)?'ready':'raw'};}
+  deliverItem(item,s){
+    const recipe=recipeForPlate(item),index=this.orders.findIndex(order=>order.recipeId===recipe?.id);
+    if(!recipe||index<0){this.say('Chưa có đơn khớp món này. Kiểm tra rau và tương ớt trên phiếu.');return false;}
+    const [order]=this.orders.splice(index,1);this.combo++;this.maxCombo=Math.max(this.maxCombo,this.combo);
+    const points=100+Math.ceil(order.remaining*.3)+Math.min(40,(this.combo-1)*10);this.score+=points;this.served++;item.parts=[];item.dirty=true;
+    const returnTray=this.stations.find(station=>station.returnTray);this.placeBeside(item,returnTray||s,{x:s.x,z:s.z-1.15});
+    this.mark('serve');this.emit('serve',{points,station:s.id,orderId:order.id});this.say(`Ngon quá! +${points} điểm`);return true;
+  }
+  deliver(s){if(this.deliverItem(this.player.hand,s))this.player.hand=null;}
+  placeBeside(item,near,fallback){
+    const candidates=this.stations.filter(s=>s.type==='counter'&&!s.item&&!s.fire&&distance(s,near)<3.05).sort((a,b)=>distance(a,near)-distance(b,near));
+    if(candidates.length){candidates[0].item=item;return;}this.placeGround(item,fallback.x,fallback.z);
+  }
+  processWork(dt){
+    const s=this.target,p=this.player;
+    if(p.hand?.kind==='extinguisher'){
+      p.spraying=true;this.work={station:s?.id,action:'extinguish'};
+      for(const station of this.stations){const dx=station.x-p.x,dz=station.z-p.z,d=Math.hypot(dx,dz),dot=(dx*p.facingX+dz*p.facingZ)/(d||1);
+        if(d>3.5||dot<.58||station.fire<=0)continue;station.fire=Math.max(0,station.fire-dt/RULES.extinguish);station.wet=5;
+        if(station.fire===0){station.fireClock=0;this.emit('extinguished',{station:station.id});}}
       return;
     }
-    if (hand) {
-      if (s.type === 'serve' && isReadyPlate(hand) && this.orders.length) { this.deliver(s); return; }
-      // All empty tiles accept a held object, regardless of their station type.
-      s.item = hand; p.hand = null; s.progress = 0; s.heat = 0;
-      if (s.type === 'serve' && hand.kind === 'meal') this.say('Đã đặt món lên quầy. Thêm đĩa sạch trước khi giao nhé!');
-      this.emit(s.type === 'pan' && isPanFood(hand) ? 'sizzle' : 'place');
-      if (s.type === 'pan' && hand.kind === 'meat' && hand.state === 'raw') this.say('Đã đặt thịt lên bếp. Cần mang sang thớt cắt trước khi rán.');
-      return;
-    }
-    if (s.type === 'source') {
-      const item = { kind: s.ingredient, state: ['bread', 'sauce'].includes(s.ingredient) ? 'ready' : 'raw' };
-      p.hand = item; this.mark(`take-${s.ingredient}`); this.emit('pickup');
-      return;
-    }
-    if (s.type === 'plates') {
-      if (!this.cleanPlates) { this.say('Đĩa sạch đã hết. Giữ E ở bồn rửa để rửa đĩa.'); return; }
-      this.cleanPlates--; p.hand = { kind: 'plate', parts: [] }; this.emit('pickup'); return;
-    }
-    if (s.type === 'sink') { this.say(this.dirtyPlates ? 'Giữ E để rửa. Cần tay trống.' : 'Đĩa bẩn sẽ được trả về sau khi giao món.'); return; }
+    if(!s||p.hand||s.fire)return;let duration=0,action='';
+    if(s.type==='board'&&isChoppable(s.item)){duration=RULES.chop;action='chop';}
+    else if(s.type==='sink'&&s.item?.kind==='plate'&&s.item.dirty){duration=RULES.wash;action='wash';}
+    else if(s.type==='trash'&&s.item){duration=RULES.discard;action='discard';}
+    if(!duration)return;this.work={station:s.id,action};s.progress+=dt;if(s.progress+1e-8<duration)return;
+    if(action==='chop'){s.item.state='chopped';this.mark(`chop-${s.item.kind}`);}
+    if(action==='wash'){const plate=s.item;plate.dirty=false;this.clearSlot(s);this.placeBeside(plate,this.stations.find(c=>c.id===s.outputId)||s,{x:s.x,z:s.z-1.15});}
+    if(action==='discard')s.item=this.discard(s.item);s.progress=0;this.work=null;this.emit(action);
   }
-  deliver(s) {
-    const recipe = recipeForPlate(this.player.hand);
-    const index = this.orders.findIndex(order => order.recipeId === recipe?.id);
-    if (!recipe || index < 0) { this.say('Chưa có đơn khớp món này. Kiểm tra rau và tương ớt trên phiếu nhé!'); return; }
-    const [order] = this.orders.splice(index, 1);
-    this.combo++; this.maxCombo = Math.max(this.maxCombo, this.combo);
-    const points = 100 + Math.ceil(order.remaining * 0.3) + Math.min(40, (this.combo - 1) * 10);
-    this.score += points; this.served++; this.player.hand = null; this.returningPlates.push(3); this.mark('serve');
-    this.emit('serve', { points, station: s.id }); this.say(`Ngon quá! +${points} điểm`);
+  groundPosition(x,z,avoidItems=true){
+    const valid=(xx,zz)=>this.canStand(xx,zz,.16)&&(!avoidItems||!this.groundItems.some(g=>Math.hypot(xx-g.x,zz-g.z)<.42));
+    if(valid(x,z))return {x,z};
+    for(let r=.3;r<=30;r+=.3)for(let i=0;i<24;i++){const xx=x+Math.cos(i*Math.PI/12)*r,zz=z+Math.sin(i*Math.PI/12)*r;if(valid(xx,zz))return {x:xx,z:zz};}
+    return {...SPAWN};
   }
-  processWork(dt) {
-    const s = this.target;
-    if (!s || this.player.hand) return;
-    let duration = 0, action = '';
-    if (s.type === 'board' && isChoppable(s.item)) { duration = RULES.chop; action = 'chop'; }
-    else if (s.type === 'sink' && !s.item && this.dirtyPlates > 0) { duration = RULES.wash; action = 'wash'; }
-    else if (s.type === 'pan' && s.item?.state === 'burnt') { duration = RULES.clean; action = 'clean'; }
-    else if (s.type === 'trash' && s.item && (s.item.kind !== 'plate' || s.item.parts.length)) { duration = RULES.discard; action = 'discard'; }
-    if (!duration) return;
-    this.work = { station: s.id, action }; s.progress += dt;
-    if (s.progress >= duration) {
-      if (action === 'chop') { s.item.state = 'chopped'; this.mark(`chop-${s.item.kind}`); }
-      if (action === 'wash') { this.dirtyPlates--; this.cleanPlates++; }
-      if (action === 'clean') { s.item = null; s.heat = 0; }
-      if (action === 'discard') { if (s.item.kind === 'plate') s.item.parts = []; else s.item = null; this.say('Đã bỏ thức ăn. Đĩa được giữ lại trên quầy.'); }
-      s.progress = 0; this.work = null; this.emit(action);
+  placeGround(item,x,z){
+    const position=this.groundPosition(x,z),g={id:`ground-${++this.entityId}`,type:'ground',label:'Vật phẩm dưới đất',icon:item.kind,width:.3,depth:.3,...position,item,progress:0,heat:0};this.groundItems.push(g);return g;
+  }
+  drop(){if(this.phase!=='playing'||!this.player.hand)return;const p=this.player;this.placeGround(p.hand,p.x+p.facingX*.68,p.z+p.facingZ*.68);p.hand=null;this.emit('place');this.selectTarget();}
+  throwTarget(target){
+    if(!finitePoint(target))return null;
+    const p=this.player,dx=target.x-p.x,dz=target.z-p.z,d=Math.hypot(dx,dz),scale=d>RULES.throwRange?RULES.throwRange/d:1,point={x:p.x+dx*scale,z:p.z+dz*scale};
+    const station=this.stations.find(s=>Math.abs(point.x-s.x)<=s.width/2&&Math.abs(point.z-s.z)<=s.depth/2);
+    if(station)return {...point,y:1.14,stationId:station.id};
+    const floor=this.canStand(point.x,point.z,.16)?point:this.groundPosition(point.x,point.z,false);
+    if(distance(p,floor)>RULES.throwRange+.1)return {x:p.x+p.facingX*.6,z:p.z+p.facingZ*.6,y:.2};return {...floor,y:.2};
+  }
+  throwItem(target){
+    if(this.phase!=='playing'||!this.player.hand)return false;const end=this.throwTarget(target);if(!end)return false;
+    const p=this.player,d=distance(p,end);this.projectiles.push({id:`throw-${++this.entityId}`,ownerId:p.id,item:p.hand,start:{x:p.x,z:p.z,y:1.25},end,elapsed:0,duration:.3+d*.065,arc:Math.min(3,.65+d*.22)});
+    p.hand=null;this.emit('throw');return true;
+  }
+  receiveItem(existing,incoming){
+    if(existing?.kind==='pan'){
+      if(this.putInPan(existing,incoming))return existing;
+      if(existing.food?.state==='cooked'&&incoming.kind==='plate'){const result=assembled(existing.food,incoming);if(result){this.emptyPan(existing);return {container:existing,result};}}
+      return null;
+    }return assembled(existing,incoming);
+  }
+  land(projectile){
+    const {item,end,ownerId}=projectile,recipient=this.players.find(p=>p.id!==ownerId&&distance(p,end)<.8);
+    if(recipient){
+      if(!recipient.hand){recipient.hand=item;this.emit('catch',{playerId:recipient.id});return;}
+      const merged=this.receiveItem(recipient.hand,item);
+      if(merged){if(merged.container){recipient.hand=merged.container;this.placeGround(merged.result,recipient.x+recipient.facingX*.6,recipient.z+recipient.facingZ*.6);}else recipient.hand=merged;this.emit('catch',{playerId:recipient.id});return;}
     }
+    const s=this.stations.find(s=>Math.abs(end.x-s.x)<=s.width/2&&Math.abs(end.z-s.z)<=s.depth/2);
+    if(s&&!s.fire){
+      if(!s.item){
+        if(s.type==='serve'&&isReadyPlate(item)&&this.deliverItem(item,s))return;
+        if(s.type==='trash'){s.item=this.discard(item);this.emit('discard');return;}s.item=item;s.progress=0;this.emit('place');return;
+      }
+      const merged=this.receiveItem(s.item,item);
+      if(merged){if(merged.container){s.item=merged.container;this.placeGround(merged.result,s.x,s.z+s.approach.z);}else s.item=merged;this.emit('assemble');return;}
+    }
+    const ground=this.groundItems.find(g=>distance(g,end)<.5);
+    if(ground){const merged=this.receiveItem(ground.item,item);if(merged&&!merged.container){ground.item=merged;this.emit('assemble');return;}}
+    this.placeGround(item,end.x,end.z);this.emit('place');
   }
-  get stars() { return RULES.stars.filter(s => this.score >= s).length; }
-  get tutorial() {
-    if (this.served > 0) return { title: 'Mỗi khách một khẩu vị', text: 'Bánh mì luôn có thịt. Thêm rau, tương ớt hoặc cả hai đúng theo phiếu. Tương ớt lấy ra dùng ngay!', station: null };
-    const recipe = getRecipe(this.orders[0]?.recipeId) || RECIPES[0];
-    if (!this.guide.has('take-meat')) return { title: 'Bắt đầu với phần thịt', text: 'Đi tới quầy thịt heo ở phía sau. Nhấn Space để lấy.', station: 'meat' };
-    if (!this.guide.has('chop-meat')) return { title: 'Cắt thịt', text: 'Đặt thịt lên thớt bằng Space, thả phím rồi giữ E để cắt.', station: 'board-a' };
-    const cooking = this.stations.some(s => s.type === 'pan' && s.item);
-    if (!this.guide.has('cook') && !cooking) return { title: 'Bật bếp nào!', text: 'Lấy thịt đã cắt rồi đặt lên bếp rán ở dãy quầy phía trước, bên trái.', station: 'pan-a' };
-    if (recipe.parts.includes('vegetable:chopped') && !this.guide.has('chop-vegetable')) return { title: 'Chuẩn bị rau trong lúc chờ', text: 'Đơn này có rau. Lấy rau, đặt lên thớt rồi giữ E để cắt.', station: this.player.hand?.kind === 'vegetable' ? 'board-a' : 'vegetable' };
-    if (!this.guide.has('plate')) return { title: 'Ghép trước, thêm đĩa sau', text: 'Space để ghép các nguyên liệu đã sẵn sàng trên bàn. Có thể ghép cả món trước rồi dùng đĩa sạch lấy món.', station: 'plates' };
-    if (![this.player.hand, ...this.stations.map(s => s.item)].some(item => recipeForPlate(item)?.id === recipe.id)) return { title: `Soạn ${recipe.name.toLowerCase()}`, text: `Bánh mì + thịt chín. ${recipe.note}. Ghép đúng thành phần bằng Space tại bàn.`, station: recipe.parts.includes('sauce:ready') ? 'sauce' : null };
-    return { title: 'Giao chiếc bánh đầu tiên!', text: 'Cầm đĩa tới một trong ba ô của xe bánh mì bên phải, phía trước rồi nhấn Space.', station: 'serve' };
-  }
+  tickThrows(dt){const flying=this.projectiles;this.projectiles=[];for(const p of flying){p.elapsed+=dt;if(p.elapsed>=p.duration)this.land(p);else this.projectiles.push(p);}}
+  get stars(){return RULES.stars.filter(s=>this.score>=s).length;}
+  get tutorial(){return {title:'Bếp bánh mì',text:'Cắt thịt, rán trong chảo, ghép đúng đơn và đặt lên đĩa. Mang đĩa bẩn về bồn rửa.',station:null};}
 }
-

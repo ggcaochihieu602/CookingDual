@@ -15,6 +15,21 @@ export async function loadKitchenAssets(){
       }
       models.set(name,model);
     }
+    try {
+      const response=await fetch('/assets/characters-meshes.json');if(!response.ok)throw new Error(`Character request ${response.status}`);
+      const characters=await response.json();
+      const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.76});
+      for(const [name,parts] of Object.entries(characters)){
+        const model=new THREE.Group();model.name=name;
+        for(const part of parts){
+          const pivot=new THREE.Group();pivot.name=part.joint;pivot.position.fromArray(part.origin);
+          const geometry=new THREE.BufferGeometry();
+          for(const [attribute,values] of [['position',part.positions],['normal',part.normals],['color',part.colors]])geometry.setAttribute(attribute,new THREE.Float32BufferAttribute(values,3));
+          geometry.computeBoundingSphere();const mesh=new THREE.Mesh(geometry,material);mesh.castShadow=true;mesh.receiveShadow=true;pivot.add(mesh);model.add(pivot);
+        }
+        models.set(name,model);
+      }
+    }catch(error){console.warn('Character assets unavailable:',error.message);}
     return models;
   }catch(error){console.warn('Using the built-in kitchen props:',error.message);return new Map();}
 }

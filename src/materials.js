@@ -77,7 +77,7 @@ export function studioEnvironment(renderer) {
   generator.dispose();texture.dispose();return target;
 }
 
-export function createWater() {
+export function createWater(simple=false) {
   const texture=canvasTexture((ctx,size)=>{
     const pixels=ctx.createImageData(size,size), n=8, cell=size/n;
     const seed=(x,y)=>{const value=Math.sin(((x+n)%n)*127.1+((y+n)%n)*311.7)*43758.5453;return value-Math.floor(value);};
@@ -93,9 +93,9 @@ export function createWater() {
       pixels.data[index]=20+glow*123+halo*20;pixels.data[index+1]=175+glow*66+halo*10;pixels.data[index+2]=162+glow*61+halo*10;pixels.data[index+3]=255;
     }
     ctx.putImageData(pixels,0,0);
-  },512);
+  },256);
   texture.wrapS=texture.wrapT=THREE.RepeatWrapping;
-  const material=new THREE.ShaderMaterial({
+  const material=simple?new THREE.MeshBasicMaterial({map:texture,color:'#91d6c7'}):new THREE.ShaderMaterial({
     uniforms:{caustics:{value:texture},time:{value:0}},
     vertexShader:`varying vec2 waterUv;void main(){waterUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
     fragmentShader:`uniform sampler2D caustics;uniform float time;varying vec2 waterUv;
@@ -109,6 +109,7 @@ export function createWater() {
         #include <colorspace_fragment>
       }`,
   });
+  if(simple)texture.repeat.set(19,19);
   const mesh=new THREE.Mesh(new THREE.PlaneGeometry(120,120),material);mesh.rotation.x=-Math.PI/2;mesh.position.y=-1;
   return {mesh,material,texture};
 }

@@ -39,7 +39,7 @@ export class OnlineSession {
   }
   send(type,data={}){if(this.connected && this.socket?.readyState===WebSocket.OPEN)this.socket.send(JSON.stringify({type,...data}));}
   input(input,now,force=false){if(force || now-this.lastInput>=45){this.lastInput=now;this.send('input',{input});}}
-  action(action){this.send('action',{action});}
+  action(action,data={}){this.send('action',{action,...data});}
   leave(notify=true) {
     this.intentional=true;clearTimeout(this.retryTimer);if(notify)this.send('leave');
     if(this.socket){this.socket.close();this.socket=null;}

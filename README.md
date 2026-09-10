@@ -1,119 +1,108 @@
 # CookingDual · Bếp đảo xanh
 
-Bản game mới, viết lại từ đầu: **một màn bếp 3D, chơi đơn hoặc hai người qua Internet, 180 giây**. Màn hiện tại có **55 ô quầy** trên hai khu bếp rộng nối bằng cầu, sàn xanh và quầy vàng theo ảnh tham khảo. Camera 3/4 chính diện hạ xuống khoảng **38°**; trái/phải trên màn hình trùng hướng di chuyển. Giao diện tiếng Việt; hỗ trợ bàn phím và cảm ứng.
+Game bếp 3D tiếng Việt, một màn 180 giây, chơi đơn hoặc hai người trên hai thiết bị qua Internet.
 
-## Chơi ngay
+**Bản public:** https://cookingdual.onrender.com/
+**Mã nguồn:** https://github.com/ggcaochihieu602/CookingDual
 
-Nhấp đúp **`Choi-CookingDual.cmd`** để khởi động và mở game trong trình duyệt. Máy hiện tại đã có Node.js.
+## Chơi tại máy
 
-Hoặc chạy trong thư mục này:
+Nhấp đúp `Choi-CookingDual.cmd`, hoặc chạy với Node.js 24:
 
 ```sh
 npm ci
 npm start
 ```
 
-Mở **http://localhost:5173**. Cần Node.js 24; lần đầu cần Internet để cài gói WebSocket. Sau khi cài, chơi đơn tại máy không cần Internet; tài nguyên 3D và âm thanh đều nằm trong dự án. Trình duyệt cần hỗ trợ WebGL 2. Nên chơi ngang trên điện thoại và iPad. File khởi động Windows tự cài gói khi thiếu.
+Mở http://localhost:5173. Tài nguyên 3D, ảnh món và nhạc đều nằm trong dự án. Chơi đơn tại máy không cần Internet sau khi cài thư viện. Trình duyệt cần WebGL 2; nên xoay ngang điện thoại/iPad.
 
-## Chơi chung trên hai máy
+## Chơi chung
 
-Chọn **Chơi cùng bạn → nhập tên → Tạo phòng mới**, gửi liên kết hoặc mã 6 ký tự cho người thứ hai. Đủ 2/2 người, chủ phòng bắt đầu. Hai đầu bếp cam/xanh chia sẻ bàn, vật phẩm, đơn, điểm và thời gian. Có thể đặt nguyên liệu hoặc món đang ghép lên bàn để người kia lấy tiếp. Tạm dừng áp dụng cho cả phòng; mất mạng giữ chỗ 3 phút để nối lại.
-
-Để bạn bè ở mạng khác mở được game, cần đưa cả server lên web. Hướng dẫn đầy đủ trong **[DEPLOY.md](DEPLOY.md)** hoặc **http://localhost:5173/publish.html**; có sẵn `render.yaml`, `Dockerfile` và gói `artifacts/CookingDual-web.zip`. Chưa có địa chỉ public được triển khai tự động.
+Chọn **Chơi cùng bạn → nhập tên → Tạo phòng mới**, gửi liên kết hoặc mã phòng cho bạn. Người thứ hai mở liên kết, nhập tên và vào phòng; chủ phòng bắt đầu khi đủ 2/2. Người đầu tiên là chó vàng áo vá; người thứ hai là nhân vật xanh. Cả hai chia sẻ đồ vật, đơn, điểm, lửa và đồng hồ. Khi mất mạng, phòng giữ chỗ ba phút nếu máy chủ vẫn chạy.
 
 ## Điều khiển
 
 | Thao tác | Bàn phím | Cảm ứng |
 |---|---|---|
-| Di chuyển | WASD hoặc phím mũi tên | Cần bên trái |
-| Cầm / đặt / ghép / giao | Space | Chạm nút bên phải |
-| Cắt / rửa / dọn chảo | Giữ E | Giữ nút khi hiện “Giữ” |
-| Lướt nhanh | Shift | Nút tia chớp |
-| Tạm dừng | Escape | Nút tạm dừng phía trên |
+| Di chuyển | WASD / mũi tên | Joystick trái |
+| Cầm / đặt / ghép / giao | Space | Chạm nút tương tác |
+| Cắt / rửa / xịt chữa cháy | Giữ E | Giữ nút tương tác |
+| Thả đồ xuống đất | Q, hoặc Space khi không có mục tiêu | Nút Thả |
+| Ngắm và ném | Giữ R, đưa chuột đến điểm rơi, thả R | Giữ Ném, kéo ngón tay, thả |
+| Dash liên tục | Giữ Shift | Giữ nút Lướt |
+| Tạm dừng | Escape | Nút tạm dừng |
 
-Đứng gần và hướng về quầy. Viền vàng là quầy đang được chọn. Thao tác cầm/đặt và giữ để chế biến là hai thao tác riêng: thả nút sau khi đặt rồi giữ lại để cắt. Map không còn nhãn chữ hoặc hộp hướng dẫn nổi; nút **?** mở đầy đủ cách chơi. Thanh tiến độ và biểu tượng báo đang cắt/rán, đã chín hoặc sắp cháy.
+Đứng gần và hướng về vật muốn tương tác. Viền vàng chọn quầy; vòng sáng chọn đồ dưới đất. Chạm nhanh nút tương tác để nhặt đồ khỏi thớt/bồn, giữ để cắt/rửa. Khi đang cầm bình chữa cháy, giữ để xịt theo hướng nhìn; có thể di chuyển trong lúc xịt.
 
-## Công thức màn đầu
+## Nấu bánh mì
 
-1. Lấy thịt → đặt lên thớt → giữ E cắt trong 2,2 giây.
-2. Lấy thịt đã cắt → đặt lên bếp → rán 6 giây. Lấy thịt trong 14 giây tiếp theo để tránh cháy.
-3. Nếu phiếu có rau: lấy rau → đặt lên thớt → giữ E để cắt. Nếu phiếu có tương ớt: lấy tại quầy **Tương ớt** bên phải bồn rửa; dùng ngay.
-4. Đặt **bánh mì + thịt chín** cùng rau/tương ớt theo phiếu lên cùng ô bằng Space để ghép thành món, **chưa cần đĩa**. Có thể ghép các phần nhân trước, thêm bánh sau. Khi cần giao, cầm đĩa lấy món hoặc mang món tới đĩa trên bàn. Bánh mì từ quầy dùng ngay.
-5. Cầm đĩa đến một trong **ba ô giao của xe bánh mì**, phía trước bên phải → Space để giao.
+1. Lấy thịt từ nguồn ở dãy trên cùng, đặt lên thớt lớn và cắt 2,2 giây.
+2. Cho thịt đã cắt vào chảo trên bếp; rán 6 giây. Có 21 giây sau khi chín trước khi cháy; tiếng cảnh báo bắt đầu ở giây 14.
+3. Nếu phiếu có rau, cắt rau trên thớt. Bánh mì và tương ớt dùng ngay.
+4. Ghép nguyên liệu đã sẵn sàng bằng Space. Hai nhóm chưa có đĩa sẽ ghép và nằm trên tay. Có thể lấy thêm nguyên liệu từ bàn hoặc dưới đất; không ghép sống/cháy/trùng loại.
+5. Thêm món vào đĩa trên bàn, hoặc cầm đĩa lấy món. Mang hoặc ném đĩa tới một trong ba ô xe bánh mì để giao đúng đơn.
 
-| Phiếu | Thành phần trên đĩa |
+| Phiếu | Thành phần |
 |---|---|
 | Thịt nguyên bản | Bánh mì + thịt chín |
 | Thịt & rau | Bánh mì + thịt chín + rau đã cắt |
 | Thịt & tương ớt | Bánh mì + thịt chín + tương ớt |
-| Bánh mì đầy đủ | Bánh mì + thịt chín + rau đã cắt + tương ớt |
+| Đầy đủ | Bánh mì + thịt chín + rau đã cắt + tương ớt |
 
-Rau và tương ớt là hai lựa chọn độc lập. Có thể thêm một hoặc cả hai vào bánh đã có thịt. Món phải khớp **chính xác** một đơn đang chờ; giao sai giữ nguyên món trên tay và không tính điểm. Có thể giao đơn phù hợp ở bất kỳ vị trí nào trong hàng đợi. Phiếu chỉ hiện **ảnh bánh sau khi ghép, hình các nguyên liệu cần có và thanh thời gian**. Hình bánh trên đĩa thay đổi theo thành phần.
+Món phải khớp chính xác một đơn đang chờ. Phiếu chỉ hiện ảnh món, các nguyên liệu và thanh thời gian. Khách trên vỉa hè tương ứng với đơn: hoàn thành đơn thì khách rời hàng, đơn mới có khách tới.
 
-Có thể cầm thức ăn hoặc cả món đã ghép để thêm vào đĩa đặt trên quầy, hoặc cầm đĩa để lấy món đang đặt trên quầy. Hai nhóm nguyên liệu chưa có đĩa cũng ghép được với nhau. Không ghép nguyên liệu sống, cháy hoặc trùng loại. Hệ thống ghép hoạt động trên mọi loại ô; cần đĩa sạch trước khi giao.
+## Đồ vật, chảo, đĩa và lửa
 
-**Mọi ô trống đều nhận vật phẩm**, kể cả thớt, bếp, nguồn nguyên liệu, kệ đĩa, bồn rửa và quầy giao món. Ô đã có đồ không bị ghi đè. Vật đang đặt trên mặt quầy được ưu tiên nhặt/ghép trước; muốn lấy nguyên liệu mới hoặc đĩa mới từ kho, cần để trống tay và mặt quầy. Bếp chỉ rán thịt đã cắt; đĩa hoặc rau đặt tạm trên bếp không bị nấu. Thớt chỉ xử lý thịt/rau sống, không xử lý đĩa.
+- Mọi ô trống đều nhận đồ, kể cả nguồn nguyên liệu, thớt, bếp và bồn. Nguồn chỉ phát nguyên liệu khi tay và mặt quầy đều trống. Ô đang có đồ không bị ghi đè.
+- Ban đầu có **bốn đĩa thật** trên các ô gần xe bánh mì. Giao xong, đĩa bẩn xuất hiện cạnh xe. Cầm tới bồn ở bếp trên, đặt xuống và giữ để rửa hai giây. Đĩa sạch nằm cạnh bồn. Nếu hết mặt bàn trống, đĩa được đặt xuống sàn gần đó; không biến mất.
+- Mỗi bếp có một chảo có thể nhấc đi. Chảo chỉ nấu khi nằm trên bếp; nhấc khỏi bếp sẽ dừng nấu/cháy. Cầm chảo có thịt chín tới đĩa hoặc nguyên liệu để trút, chảo rỗng vẫn ở trên tay. Hoặc cầm đĩa/món lấy thịt từ chảo đang đặt xuống.
+- Đồ có thể thả, nhặt, ghép dưới đất hoặc ném theo đường ngắm. Đồng đội đứng tại điểm rơi có thể bắt; mặt quầy trống nhận đồ, chảo nhận thịt đã cắt, xe nhận món đúng đơn. Điểm không nhận được đồ sẽ làm đồ rơi xuống sàn an toàn.
+- Thịt cháy gây lửa, lan sang các ô sát bên mỗi sáu giây. Lấy bình chữa cháy ở đầu trái dãy thớt, giữ để xịt. Dập lửa trước khi lấy đồ khỏi quầy cháy. Mang đồ hỏng tới thùng rác bên phải xe; thức ăn bị bỏ, chảo/đĩa vẫn dùng tiếp.
 
-Ba đĩa luân chuyển: giao món → đĩa bẩn trả về bồn sau 3 giây → giữ E rửa 2 giây với tay và mặt bồn trống → đĩa trở lại kệ. Để bỏ thức ăn, dùng Space đặt lên ô Dọn thức ăn rồi giữ E; đĩa được giữ lại trên quầy. Thịt cháy được dọn bằng cách giữ E tại bếp với tay trống.
+## Điểm và nhịp chơi
 
-## Nhịp ca bếp
+Ca bếp 180 giây, tối đa ba đơn chờ, thêm đơn mỗi 26 giây; mỗi đơn có 100 giây. Giao đúng được 100 điểm cộng thưởng thời gian và chuỗi. Hết hạn đơn trừ 15 điểm (không âm), mất chuỗi. Các mốc sao: 100 / 300 / 550 điểm. Kỷ lục và cài đặt âm thanh/đồ họa được lưu trên trình duyệt.
 
-- Một đơn lúc bắt đầu, thêm đơn mỗi 26 giây, tối đa 3 đơn chờ; mỗi đơn có 100 giây.
-- Giao đúng: 100 điểm + thưởng thời gian còn lại + thưởng chuỗi liên tiếp (tối đa 40 điểm).
-- Đơn hết giờ: trừ 15 điểm, không âm; chuỗi liên tiếp về 0.
-- 1 / 2 / 3 sao tại 100 / 300 / 550 điểm.
-- Đồng hồ đứng yên ở menu, đếm ngược, tạm dừng và bảng kết quả.
-- Mở hướng dẫn, âm lượng hoặc ẩn trang sẽ tạm dừng. Online chỉ mất focus cửa sổ thì thả điều khiển; ẩn tab/mất mạng mới dừng cả ca.
-- Lưu kỷ lục và tùy chọn âm thanh trên trình duyệt. Bản đầu chưa lưu ca đang chơi.
+Mở hướng dẫn/cài đặt hoặc ẩn trang sẽ tạm dừng. Khi online, tạm dừng áp dụng cho cả phòng. Nhạc nền gốc tổng hợp bằng Web Audio bắt đầu sau thao tác chạm/bấm đầu tiên.
 
-## Phạm vi bản làm lại
+## iPad và đồ họa
 
-Đã có: nhân vật 3D có chuyển động, 55 ô quầy với va chạm theo từng ô, chọn quầy theo hướng nhìn, vật phẩm trên tay/mặt bàn, ba thớt lớn và ba bếp, bốn công thức bánh mì, tương ớt, xe giao bánh mì rộng ba ô với tủ kính và mái sọc, cháy/dọn, luân chuyển đĩa, đơn hàng, điểm/sao, hướng dẫn theo bước, âm thanh, tạm dừng, chơi lại và điều khiển cảm ứng. Điện thoại dọc theo nhân vật; điện thoại ngang theo chiều sâu để đồ vật đủ lớn. Mọi chế độ giữ camera nhìn chính diện.
+Cảm ứng mặc định chế độ **Tiết kiệm · 30 FPS**. Nút đồ họa ở thanh trên cho phép chọn 60 FPS. Bản này giảm mật độ điểm ảnh, bỏ bóng động tốn tài nguyên trên cảm ứng, gộp mô hình tĩnh, giảm chi tiết hình học nhỏ và dùng mặt nước đơn giản. Vẫn giữ bóng sát chân và các vật phẩm/nhân vật 3D.
 
-Đã có multiplayer hai người qua WebSocket, phòng/mã mời, nối lại, nhạc nền tự tổng hợp, tùy chỉnh nhạc/hiệu ứng riêng và manifest thêm ra màn hình chính. Nhạc bắt đầu sau thao tác bấm/chạm; không tải nhạc của bên thứ ba. Phiếu món dùng ảnh 3D, HUD có đồng hồ xanh, huy hiệu điểm cam và ba sao.
+Phép đo cùng khung hình 1180 × 820, mô phỏng cảm ứng DPR 2 trên Chromium:
 
-Màn này tập trung kiểm chứng vòng chơi cơ bản. Chưa có ném đồ, nhiều màn, tài khoản, cache chơi offline, lưu phòng qua lần khởi động server hay bản Unity/native. Kiểm tra cảm ứng và hai phiên trình duyệt hiện thực hiện bằng Chromium mô phỏng; chưa kiểm chứng trên thiết bị iPad/iPhone thật. Phòng nằm trong RAM của một tiến trình server; xem giới hạn ở DEPLOY.md.
+| Chỉ số | Bản trước | Bản này |
+|---|---:|---:|
+| Tam giác mỗi khung hình | 1.206.666 | 130.974 |
+| Lệnh vẽ mỗi khung hình | 413 | 93 |
+| Điểm ảnh dựng hình | 3.135.024 | 967.600 |
+| Giới hạn FPS mặc định | 60 | 30 |
 
-Tài liệu được tham khảo từ `E:\CookingDou`: Product Brief, Game Design, Research & Technical Reference, Asset Specification và kế hoạch tương tác không gian V4. Dự án cũ được giữ nguyên. Bản mới chọn phạm vi một màn nhỏ; các yêu cầu mở rộng trong tài liệu cũ không tự động đưa vào màn này.
+Đây là số tải dựng hình, không phải cam kết FPS hoặc nhiệt độ trên thiết bị thật. Chưa kiểm thử Safari/iPad vật lý. Mạng trễ cao vẫn có thể làm điều khiển online chậm; hiện máy chủ xử lý trạng thái chung ở 20 Hz, client nội suy vị trí.
 
-## Cấu trúc
+## Tài nguyên và cấu trúc
 
-- `src/game.js`: luật chơi, vòng đời vật phẩm, trạm, va chạm và điểm.
-- `src/level.js`: hai vùng sàn, cầu nối, 55 ô quầy và điểm tiếp cận.
-- `src/environment.js`: sàn xanh, quầy vàng, nước, đường ray, đá và thiết bị.
-- `src/materials.js`: chất liệu, texture tạo bằng mã, môi trường phản chiếu và hiệu ứng nước.
-- `src/scene.js`: căn bếp và nhân vật 3D, hiệu ứng, vật phẩm và nhãn trạm.
-- `src/main.js`: điều khiển, giao diện, âm thanh, menu và kết quả.
-- `src/rooms.mjs`: máy chủ phòng, vòng mô phỏng chung và nối lại.
-- `src/online.js`: kết nối và điều khiển client online.
-- `src/music.js`: nhạc nền gốc được tổng hợp bằng Web Audio.
-- `src/assets.js`: tải mesh Blender và chia sẻ geometry/material giữa các vật phẩm.
-- `src/style.css`: giao diện máy tính / cảm ứng.
-- `src/island.css`: HUD nổi toàn màn hình theo ảnh tham khảo.
-- `src/hud.css`: phiếu hình ảnh, đồng hồ/huy hiệu/sao và map không nhãn chữ.
-- `src/social.css`: menu phòng, lời mời và cài đặt âm thanh.
-- `assets/`: mô hình và ảnh món render từ Blender; `kitchen.blend` là file nguồn chỉnh sửa.
-- `scripts/build-assets.py`: dựng và xuất 13 mẫu đồ ăn/đĩa cùng ảnh phiếu bằng Blender 5.2.
-- `vendor/`: Three.js 0.185.1 và RoundedBoxGeometry, giấy phép MIT đi kèm.
-- `tests/`: kiểm tra luật chơi và chơi thử tự động trong trình duyệt.
-- `artifacts/`: ảnh màn chơi và báo cáo kiểm tra trình duyệt.
+- `src/game.js`, `src/level.js`: luật chơi và sơ đồ theo ảnh chú thích.
+- `src/scene.js`, `src/environment.js`, `src/materials.js`: dựng hình, đồ vật, vật liệu và tối ưu.
+- `src/dynamics.js`: đồ dưới đất, đường ném, lửa/bọt và hàng khách.
+- `src/main.js`, `src/controls.css`: giao diện, bàn phím/cảm ứng và âm thanh.
+- `src/rooms.mjs`, `src/online.js`, `server.mjs`: phòng WebSocket và máy chủ cùng địa chỉ với web.
+- `assets/characters.blend`: hai nhân vật low-poly tạo trong Blender theo ảnh tham chiếu; `scripts/build-characters.py` dựng/xuất lại.
+- `assets/kitchen.blend`: đồ ăn/đĩa và bốn kiểu bánh; `scripts/build-assets.py` dựng/xuất lại.
+- `vendor/`: Three.js 0.185.1 cùng giấy phép MIT.
+- `tests/`: kiểm thử luật, phòng, trình duyệt và chơi online.
+- `artifacts/`: ảnh và báo cáo kiểm tra, gói `CookingDual-web.zip`.
 
-Tất cả mô hình bếp, nhân vật, đồ ăn, icon và đồ họa của bản này được dựng mới trong dự án; không sử dụng mô hình hay sprite của Overcooked hoặc Kitchen Chaos. Bộ đồ ăn/đĩa hiện tại được dựng bằng Blender: bánh có vết rạch/vừng, thịt có vân mỡ/vết nướng, rau có gân lá, chai tương có nhãn hình ớt; bốn chiếc bánh phản ánh đúng rau và tương đã thêm. Ảnh trên phiếu được render từ chính bộ model này. Mesh được nén khi truyền qua HTTP; mô hình dựng sẵn bằng mã là phương án dự phòng nếu không tải được asset.
+Mô hình nhân vật được dựng mới theo hình tham khảo; bản low-poly ưu tiên nhận diện và hiệu năng. Không lấy mô hình hoặc sprite từ Overcooked. Chưa có nhiều màn, tài khoản, lưu ca qua restart máy chủ hoặc cache offline.
 
-Đồ họa có sàn gạch men bo cạnh, vân gỗ, chất liệu kim loại/gốm, ánh sáng môi trường và bóng sát chân vật thể. Mặt nước có các vệt sáng và gợn chuyển động; cây lá, đầu bếp, khay nguyên liệu và bánh mì được bổ sung chi tiết. Mái xe tự mờ khi đến gần để không che đầu bếp. Texture được tạo ngay trong game, không cần tải từ Internet; hiệu ứng nước đứng yên khi tạm dừng hoặc bật giảm chuyển động.
-
-## Kiểm tra
+## Kiểm tra và đóng gói
 
 ```sh
 npm test
 npm run check
-```
-
-Kiểm thử trình duyệt cần Playwright và Chromium. Bộ kiểm thử trong môi trường hiện tại chạy bằng:
-
-```sh
 node tests/browser.cjs
+node tests/features.cjs
 node tests/online.cjs
 ```
 
-Có thể chỉ định đường dẫn khác bằng `PLAYWRIGHT_MODULE` và `CHROME_PATH`. Bộ browser.cjs cần máy chủ đang chạy ở cổng 5173; online.cjs tự mở server thử nghiệm. Chế độ kiểm tra `?test=1` mới xuất đối tượng kiểm tra phía client; không mở API sửa trạng thái phía server.
+Kiểm thử trình duyệt cần Playwright/Chromium; có thể đặt `PLAYWRIGHT_MODULE` và `CHROME_PATH`. Browser/features cần server ở 5173; online tự mở server riêng. `?test=1` cung cấp trạng thái kiểm tra phía client, không cấp quyền sửa trạng thái server. Chạy `scripts/package.ps1` để tạo gói web. Cấu hình vận hành ở [DEPLOY.md](DEPLOY.md).

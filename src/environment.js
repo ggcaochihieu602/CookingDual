@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { FLOOR_AREAS } from './level.js';
+import { FLOOR_AREAS, SIDEWALK } from './level.js';
 import { createWater } from './materials.js';
 
 const W = { gold: '#c48a3e', top: '#efbd70', rim: '#d79e46', wood: '#81562e', frame: '#515968', rail: '#a9b8b7', blue: '#329ee0' };
@@ -14,7 +14,7 @@ function platform(v, area) {
   const nx = Math.round(w / 1.0), nz = Math.round(d / 1.0), sx = w / nx, sz = d / nz;
   for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) {
     const color = ['#329cd8', '#43a9de', '#399fd6', '#50b2e1'][(i * 5 + j * 3) % 4];
-    v.finish(v.box(world, sx - .035, .05, sz - .035, color, x - w / 2 + (i + .5) * sx, .149, z - d / 2 + (j + .5) * sz, .085),'tile');
+    v.finish(v.box(world, sx - .035, .05, sz - .035, color, x - w / 2 + (i + .5) * sx, .149, z - d / 2 + (j + .5) * sz, 0),'tile');
   }
 }
 
@@ -58,17 +58,17 @@ function rocks(v, x, z, size, color) {
 }
 export function buildKitchen(v) {
   const world = v.scene;
-  v.water=createWater();world.add(v.water.mesh);
+  v.water=createWater(v.mobile);world.add(v.water.mesh);
   for (const area of FLOOR_AREAS.filter(a => ['bridge', 'entry'].includes(a.id))) platform(v, area);
   for (const area of FLOOR_AREAS.filter(a => ['main', 'upper'].includes(a.id))) platform(v, area);
   tracks(v, -12.15, 12.15, -3.2, 9.0); tracks(v, -8.95, 8.95, -12.75, -3.2);
-  for (const [x, z, rot] of [[-12.15, 2.8, 0], [12.15, 5.9, 0], [-8.95, -8.6, 0], [8.95, -5.4, 0], [-7, 9, Math.PI/2], [10, -3.2, Math.PI/2]]) cart(v, x, z, rot);
+  for (const [x, z, rot] of [[-12.15, 2.8, 0], [12.15, 5.9, 0], [-8.95, -8.6, 0], [8.95, -5.4, 0], [10, -3.2, Math.PI/2]]) cart(v, x, z, rot);
   // Piping is interrupted at the real walkways, never a decorative invisible wall.
   for (const x of [-11.15, 11.15]) {
     rail(v, x, -2.1, x, 7.7, .55, .13);
     for (const z of [-1.8, 1.2, 4.2, 7.5]) v.cylinder(world, .16, .16, .25, '#918e85', x, .56, z, 10).rotation.x = Math.PI / 2;
   }
-  for (const z of [-2.5, 8.28]) for (const side of [-1, 1]) {
+  for (const z of [-2.5]) for (const side of [-1, 1]) {
     rail(v, side * 1.6, z, side * 11.15, z, .55, .13);
     for (const x of [3.5, 6.5, 9.4]) { const ring = v.cylinder(world, .165, .165, .24, '#a19483', side * x, .55, z, 10); ring.rotation.z = Math.PI / 2; }
   }
@@ -76,6 +76,11 @@ export function buildKitchen(v) {
   for (const side of [-1, 1]) { rail(v, side * 1.6, -4.08, side * 8.13, -4.08, .5, .13); rail(v, 0, -11.8, side * 8.13, -11.8, .5, .13); }
   for (const x of [-1.58, 1.58]) { rail(v, x, -4.1, x, -2.4, .38, .10); rail(v, x, 8.25, x, 9.8, .38, .10); }
   for (const s of v.game.stations) v.buildStation(s);
+  v.box(world,SIDEWALK.width+.2,.35,SIDEWALK.depth+.2,'#526e76',0,-.07,SIDEWALK.z,.06);
+  for(let i=0;i<30;i++)for(let row=0;row<3;row++){
+    v.box(world,.79,.06,.72,(i+row)%2?'#d6c8aa':'#c4bca6',-11.8+i*.81,.139,8.29+row*.75,.015);
+  }
+  v.box(world,24.6,.13,.16,'#eee0bb',0,.18,10.15,.025);
   for (const side of [-1, 1]) {
     for (const z of [-.1, 1.35, 4.7, 6.1]) {
       const p = v.plant(world, side * 10.48, z, .88, '#65745b'); p.position.y = .16;
@@ -142,26 +147,28 @@ export function buildStation(v, s) {
   for (const side of [-1, 1]) {
     v.finish(v.box(root, s.width - .20, .39, .025, '#b97e35', 0, .40, side * .671, .018),'wood');
     v.finish(v.box(root, .27, .055, .065, '#815d30', 0, .55, side * .693, .015),'metal');
-    for(const x of [-.47,.47]) v.finish(v.sphere(root,.025,'#dab76e',x,.47,side*.697,1,1,.4),'metal');
+    for(const x of [-.47,.47]) v.finish(v.box(root,.04,.04,.012,'#dab76e',x,.47,side*.697,0),'metal');
   }
   const socket = v.group(root, 0, .90, .10);
   const view = { root, socket, key: '', slotHeight: .90, selection: null, label: null };
   if (s.type === 'source') {
     const crate={bread:'#aa7540',meat:'#be6662',vegetable:'#609b54',sauce:'#cc6846'}[s.ingredient];
-    v.finish(v.box(root, 1.20, .07, .52, crate, 0, .91, -.38, .045),'wood');
-    for(const x of [-.60,.60])v.box(root,.045,.21,.52,crate,x,1.00,-.38,.01);
-    v.box(root,1.2,.25,.045,crate,0,1.025,-.62,.01);
-    for(const [x,scale,z] of [[-.4,.44,-.40],[.4,.44,-.40],[0,s.ingredient==='sauce'?1.08:.90,-.30]]) {
+    const supply=v.group(root);view.supply=supply;
+    v.finish(v.box(supply,1.22,.075,1.22,crate,0,.91,0,.035),'wood');
+    for(const x of [-.6,.6])v.box(supply,.048,.14,1.22,crate,x,.995,0,.015);
+    for(const z of [-.6,.6])v.box(supply,1.22,.14,.048,crate,0,.995,z,.015);
+    const portions=s.ingredient==='sauce'?[[0,1.18,0]]:s.ingredient==='bread'?[[0,1.03,-.22],[0,.90,.25]]:[[0,1.27,0]];
+    for(const [x,scale,z] of portions) {
       const token = v.food({ kind: s.ingredient, state: ['bread', 'sauce'].includes(s.ingredient) ? 'ready' : 'raw' });
-      token.scale.setScalar(scale); token.position.set(x, .97, z); root.add(token);
+      token.scale.setScalar(scale); token.position.set(x, .97, z); supply.add(token);
     }
-    socket.position.z=.30;
+    socket.position.z=0;socket.position.y=.94;
   } else if (s.type === 'board') {
-    v.box(root, 1.31, .13, 1.26, '#aa7139', 0, .933, .025, .075);
-    v.finish(v.box(root, 1.23, .024, 1.18, '#ddb67f', 0, 1.01, .025, .055),'wood');
-    for (const x of [-.48, .48]) v.box(root, .014, .004, 1.00, '#d8ad70', x, 1.025, .025, .002);
+    v.box(root, s.width-.09, .13, 1.26, '#aa7139', 0, .933, .025, .075);
+    v.finish(v.box(root, s.width-.17, .024, 1.18, '#ddb67f', 0, 1.01, .025, .055),'wood');
+    for (const x of [-s.width*.41, s.width*.41]) v.box(root, .014, .004, 1.00, '#d8ad70', x, 1.025, .025, .002);
     v.box(root, .014, .004, 1.10, '#d8ad70', .10, 1.025, .025, .002);
-    const knife = v.group(root, .32, 1.14, -.31); knife.rotation.y = -.68;knife.rotation.z=-.3;
+    const knife = v.group(root, s.width*.32, 1.14, -.20); knife.rotation.y = -.68;knife.rotation.z=-.3;
     v.box(knife, .13, .10, .29, '#774936', 0, .035, .24, .03);
     v.finish(v.box(knife, .42, .06, .49, '#e4eced', -.10, .015, -.12, .014),'metal');
     v.box(knife, .025, .058, .43, '#a1b5b8', -.225, .015, -.12, .005);
@@ -181,10 +188,6 @@ export function buildStation(v, s) {
       for(const side of [-1,1]) v.box(root,.038,.033,.41,'#35434c',x+side*.12,.974,z,.006);
     }
     const burner = v.mesh(root, v.geo('torus', .32, .035, 6, 22), '#716966', 0, .974, .08); burner.rotation.x = Math.PI / 2; view.burner = burner;
-    const pan = v.group(root, 0, 1.01, .08);
-    v.finish(v.cylinder(pan, .42, .35, .10, '#3d4751'),'metal'); v.cylinder(pan, .37, .37, .012, '#394746', 0, .059);
-    const lip=v.finish(v.mesh(pan,v.geo('torus',.4,.017,6,28),'#a2abaa',0,.058),'metal');lip.rotation.x=Math.PI/2;
-    v.box(pan, .12, .08, .40, '#404852', 0, .01, .5, .03); view.pan = pan; pan.visible = false;
     view.slotHeight = socket.position.y = .985;
     for (let i = 0; i < 4; i++) {
       const steam = v.sphere(v.scene, .10, '#fff8e3'); steam.material = new THREE.MeshStandardMaterial({ color: '#fff9e7', transparent: true, opacity: .4, depthWrite: false });
@@ -197,13 +200,14 @@ export function buildStation(v, s) {
     for(const x of [-.42,.42])v.finish(v.cylinder(root,.022,.022,.36,'#bfd6d5',x,1.07,-.37,8),'metal');
     socket.position.z=.30;
   } else if (s.type === 'sink') {
-    v.finish(v.box(root, 1.12, .07, .54, '#b6cece', 0, .89, -.32, .06),'metal');
-    v.finish(v.box(root, .95, .02, .38, '#369cc5', 0, .927, -.33, .065),'ceramic');
-    const faucet=new THREE.CatmullRomCurve3([new THREE.Vector3(.33,.91,-.50),new THREE.Vector3(.33,1.4,-.5),new THREE.Vector3(.33,1.46,-.30),new THREE.Vector3(.33,1.25,-.22)]);
+    v.finish(v.box(root,s.width-.16,.10,1.22,'#c5dadd',0,.9,0,.06),'metal');
+    v.box(root,1.30,.045,.94,'#568eaa',-.44,.955,0,.09);
+    v.finish(v.box(root,1.13,.03,.79,'#4eb5d2',-.44,.979,0,.06),'ceramic');
+    for(let i=0;i<6;i++)v.finish(v.box(root,.68,.019,.034,'#8faeb2',.84,.963,(i-2.5)*.16,.008),'metal');
+    const faucet=new THREE.CatmullRomCurve3([new THREE.Vector3(-.48,.91,.50),new THREE.Vector3(-.48,1.62,.5),new THREE.Vector3(-.48,1.7,.13),new THREE.Vector3(-.48,1.42,.10)]);
     v.finish(v.mesh(root,new THREE.TubeGeometry(faucet,16,.047,8,false),'#d5dddd'),'metal');
     v.finish(v.cylinder(root,.062,.062,.1,'#d5dddd',-.35,.97,-.52,12),'metal');
-    view.dirtyStack = v.group(root, -.22, .94, -.33); view.dirtyStack.scale.setScalar(.57);
-    socket.position.z = .24;
+    socket.position.set(-.44,1.0,0);
   } else if (s.type === 'serve') {
     v.box(root, 1.33, .045, .83, '#fff1cc', 0, .895, -.23, .035);
     const ring=v.mesh(root,v.geo('torus',.33,.012,6,24),'#91b59c',0,.925,-.19);ring.rotation.x=-Math.PI/2;
@@ -224,4 +228,3 @@ export function buildStation(v, s) {
   const label = document.createElement('div'); label.className = 'station-label'; label.innerHTML = `${icon(s.icon)}<span>${s.label}</span>`;
   document.querySelector('#world-labels').append(label); view.label = label; v.stationViews.set(s.id, view);
 }
-

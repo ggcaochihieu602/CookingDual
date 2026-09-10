@@ -31,7 +31,7 @@ async function navigate(page, stationId) {
       for (let i = 0; i < 100; i++) {
         const dx = point.x-game.player.x, dz = point.z-game.player.z, d = Math.hypot(dx,dz);
         if (d < .025) break;
-        game.tick(Math.min(.02,d/4.2),{x:dx/d,z:dz/d});
+        game.tick(Math.min(.02,d/5.46),{x:dx/d,z:dz/d});
         if (i === 99) throw new Error(`Stuck on route to ${id} at ${game.player.x},${game.player.z}`);
       }
     }
@@ -69,23 +69,24 @@ async function snap(page, name) { await page.evaluate(() => new Promise(resolve=
     await page.waitForFunction(() => window.__cookingdual.game.stations.find(s => s.id === 'board-a').item?.state === 'chopped');
     await page.keyboard.up('KeyE'); await page.keyboard.press('Space');
     await pick(page, 'pan-a');
-    await page.waitForFunction(() => window.__cookingdual.game.stations.find(s => s.id === 'pan-a').item?.state === 'cooked');
-    await page.keyboard.press('Space'); assert.equal((await state(page)).player.hand.state, 'cooked');
-    await pick(page, 'board-b'); await pick(page, 'plates'); await pick(page, 'board-b');
+    await page.waitForFunction(() => window.__cookingdual.game.stations.find(s => s.id === 'pan-a').item?.food?.state === 'cooked');
+    await pick(page, 'plates'); await pick(page, 'pan-a');
     assert.equal((await state(page)).player.hand.parts[0].state, 'cooked');
-    await pick(page, 'pan-b'); assert.equal((await state(page)).stations.find(s=>s.id==='pan-b').item.kind,'plate');
-    await pick(page, 'bread'); await pick(page, 'pan-b');
+    await pick(page, 'counter-b'); assert.equal((await state(page)).stations.find(s=>s.id==='counter-b').item.kind,'plate');
+    await pick(page, 'bread'); await pick(page, 'counter-b');
     await pick(page, 'vegetable'); await pick(page, 'board-a'); await page.keyboard.down('KeyE');
     await page.waitForFunction(() => window.__cookingdual.game.stations.find(s => s.id === 'board-a').item?.state === 'chopped');
-    await page.keyboard.up('KeyE'); await page.keyboard.press('Space'); await pick(page, 'pan-b');
+    await page.keyboard.up('KeyE'); await page.keyboard.press('Space'); await pick(page, 'counter-b');
     await page.keyboard.press('Space');
     assert.equal((await state(page)).player.hand.parts.length, 3);
     await snap(page, 'dish-ready'); await pick(page, 'serve');
     const served = await state(page); assert.equal(served.served, 1); assert.ok(served.score >= 100);
     await page.waitForTimeout(250); await snap(page, 'first-delivery'); record('complete recipe using real keyboard actions and collision-aware routes');
-    record('carried plate collects cooked food from a board; carried food merges into a plate resting on a stove');
-    await page.waitForTimeout(3100); await navigate(page, 'sink'); await page.keyboard.down('KeyE');
-    await page.waitForFunction(() => window.__cookingdual.game.cleanPlates === 3); await page.keyboard.up('KeyE'); record('served plate returns dirty and can be washed');
+    record('carried plate collects cooked food while leaving the empty pan on its burner');
+    const dirtyId=await page.evaluate(()=>window.__cookingdual.game.stations.find(s=>s.item?.dirty).id);
+    await pick(page,dirtyId);await pick(page,'sink');await page.keyboard.down('KeyE');
+    await page.waitForFunction(()=>window.__cookingdual.game.cleanPlates===4);await page.keyboard.up('KeyE');
+    assert.equal((await state(page)).stations.find(s=>s.id==='sink').item,null);record('served plate returns beside the cart, is carried to the sink and emerges clean beside it');
     await page.keyboard.press('Escape'); const pausedTime = (await state(page)).time;
     await page.waitForTimeout(250); assert.equal((await state(page)).time, pausedTime);
     await page.getByRole('button', { name: 'Tiếp tục nấu' }).click(); assert.equal((await state(page)).phase, 'playing'); record('pause freezes the simulation and resumes correctly');
@@ -101,8 +102,8 @@ async function snap(page, name) { await page.evaluate(() => new Promise(resolve=
     await page.evaluate(() => { document.querySelector('#guide-close').click(); });
     await snap(page, 'gameplay-desktop');
     await navigate(page, 'upper-back--5');
-    await pick(page, 'upper-bread'); await pick(page, 'main-back--7');
-    assert.equal((await state(page)).stations.find(s => s.id === 'main-back--7').item.kind, 'bread');
+    await pick(page, 'bread'); await pick(page, 'main-back--6');
+    assert.equal((await state(page)).stations.find(s => s.id === 'main-back--6').item.kind, 'bread');
     record('crosses the bridge, reaches an upper corner tile, and carries food back to the main platform');
     await page.evaluate(() => {
       const {game}=window.__cookingdual;
@@ -153,7 +154,10 @@ async function snap(page, name) { await page.evaluate(() => new Promise(resolve=
       assert.equal(await p.locator('.order').evaluateAll(cards=>cards.every(card=>card.scrollWidth<=card.clientWidth)),true);
       assert.equal(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
       const joystickRect = await p.locator('#joystick').boundingBox(), actionRect = await p.locator('#action-touch').boundingBox();
-      assert.ok(joystickRect && actionRect); assert.ok(actionRect.x + actionRect.width <= device.viewport.width);
+      assert.ok(joystickRect&&actionRect);assert.ok(joystickRect.width>=130);assert.ok(joystickRect.x>=25);assert.ok(actionRect.width>=88);assert.ok(actionRect.x+actionRect.width<=device.viewport.width-24);
+      const mobilePerformance=await p.evaluate(()=>({fps:window.__cookingdual.scene.targetFPS,dpr:window.__cookingdual.scene.renderer.getPixelRatio(),shadows:window.__cookingdual.scene.renderer.shadowMap.enabled,drawCalls:window.__cookingdual.scene.renderer.info.render.calls,triangles:window.__cookingdual.scene.renderer.info.render.triangles}));
+      assert.equal(mobilePerformance.fps,30);assert.equal(mobilePerformance.dpr,1);assert.equal(mobilePerformance.shadows,false);
+      perf[device.name]=mobilePerformance;
       await snap(p, `gameplay-${device.name}`);
       if (device.name === 'ipad') {
         const client = await ctx.newCDPSession(p), x = joystickRect.x + joystickRect.width/2, y = joystickRect.y + joystickRect.height/2;

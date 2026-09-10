@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="/src/island.css" />
   <link rel="stylesheet" href="/src/social.css" />
   <link rel="stylesheet" href="/src/hud.css" />
+  <link rel="stylesheet" href="/src/controls.css" />
   <script type="importmap">{"imports":{"three":"/vendor/three.module.js"}}</script>
 </head>
 <body class="is-menu">
@@ -43,6 +44,11 @@
     <symbol id="i-plus" viewBox="0 0 32 32"><path d="M16 7v18M7 16h18"/></symbol>
     <symbol id="i-dash" viewBox="0 0 32 32"><path d="m18 2-12 17h10l-2 11 13-18H17Z" fill="currentColor" stroke="none"/></symbol>
     <symbol id="i-check" viewBox="0 0 32 32"><path d="m6 16 7 7L27 8" stroke-width="3"/></symbol>
+    <symbol id="i-throw" viewBox="0 0 32 32"><path d="M4 24C6 1 23 1 28 20m-7-4 7 4 2-8"/><circle cx="6" cy="25" r="3"/></symbol>
+    <symbol id="i-drop" viewBox="0 0 32 32"><path d="M16 3v18m-6-6 6 6 6-6M5 23v5h22v-5"/></symbol>
+    <symbol id="i-fire" viewBox="0 0 32 32"><path d="M17 2c3 9-6 9-1 15 3 1 5-4 5-6 13 16-7 25-13 14C3 16 12 11 17 2Z"/></symbol>
+    <symbol id="i-extinguisher" viewBox="0 0 32 32"><rect x="9" y="11" width="12" height="18" rx="4"/><path d="M13 11V5h8m-9-2 9 3m0 1c7 0 5 12 5 15M15 17v7m-3-3h6"/></symbol>
+    <symbol id="i-graphics" viewBox="0 0 32 32"><rect x="3" y="5" width="26" height="19" rx="3"/><path d="M11 29h10m-5-5v5M8 18l5-7 5 5 5-5"/></symbol>
   </defs></svg>
 
   <header class="topbar">
@@ -52,6 +58,7 @@
       <button id="sound-btn" class="icon-btn" aria-label="Tắt âm thanh" title="Bật / tắt âm thanh"><svg><use href="#i-sound"/></svg></button>
       <button id="music-btn" class="icon-btn" aria-label="Âm nhạc" title="Nhạc nền và âm lượng"><svg><use href="#i-music"/></svg></button>
       <button id="help-btn" class="icon-btn" aria-label="Cách chơi" title="Cách chơi"><svg><use href="#i-help"/></svg></button>
+      <button id="graphics-btn" class="icon-btn" aria-label="Đồ họa" title="Đồ họa và hiệu năng"><svg><use href="#i-graphics"/></svg></button>
       <button id="pause-btn" class="icon-btn play-only" aria-label="Tạm dừng" title="Tạm dừng · Esc"><svg><use href="#i-pause"/></svg></button>
     </nav>
   </header>
@@ -88,11 +95,16 @@
 
     <div id="touch-controls" class="touch-controls play-only">
       <div id="joystick" aria-label="Cần điều khiển di chuyển"><span class="joy-arrows">✣</span><div id="joystick-knob"></div></div>
-      <div class="touch-actions"><button id="dash-touch" aria-label="Lướt nhanh"><svg><use href="#i-dash"/></svg></button><button id="action-touch"><svg><use href="#i-plus"/></svg><span>Tương tác</span></button></div>
+      <div class="touch-actions">
+        <button id="drop-touch" aria-label="Thả đồ xuống đất"><svg><use href="#i-drop"/></svg><span>Thả</span></button>
+        <button id="throw-touch" aria-label="Giữ kéo và thả để ném"><svg><use href="#i-throw"/></svg><span>Ném</span></button>
+        <button id="dash-touch" aria-label="Lướt nhanh"><svg><use href="#i-dash"/></svg><span>Lướt</span></button>
+        <button id="action-touch"><svg><use href="#i-plus"/></svg><span>Tương tác</span></button>
+      </div>
     </div>
   </main>
 
-  <footer class="bottom-bar"><div class="key-guide"><span><kbd>W A S D</kbd><i class="or-arrows">/ ↑←↓→</i> Di chuyển</span><span><kbd>Space</kbd> Cầm / đặt</span><span><kbd>E</kbd> Giữ để cắt / rửa</span><span><kbd>Shift</kbd> Lướt</span></div><div class="footer-note"><span class="live-dot"></span><span class="menu-only">Bếp đã sẵn sàng</span><span class="play-only">Chậm một nhịp, cháy cả chảo!</span></div></footer>
+  <footer class="bottom-bar"><div class="key-guide"><span><kbd>WASD</kbd> Di chuyển</span><span><kbd>Space</kbd> Cầm / ghép</span><span><kbd>E</kbd> Cắt / rửa / xịt</span><span><kbd>Q</kbd> Thả</span><span><kbd>R + chuột</kbd> Ngắm / ném</span><span><kbd>Shift</kbd> Lướt</span></div><div class="footer-note"><span class="live-dot"></span><span class="menu-only">Bếp đã sẵn sàng</span></div></footer>
 
   <div id="modal" class="modal-backdrop" hidden>
     <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">

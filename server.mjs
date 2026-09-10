@@ -18,7 +18,7 @@ const server=http.createServer(async (req, res) => {
     const target = path.resolve(root, relative);
     if (!target.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
     if (!(await stat(target)).isFile()) throw new Error('Not a file');
-    if(pathname==='/assets/kitchen-meshes.json' && /\bgzip\b/.test(req.headers['accept-encoding']||'')){
+    if(/^\/assets\/[a-z-]+-meshes\.json$/.test(pathname) && /\bgzip\b/.test(req.headers['accept-encoding']||'')){
       try{const compressed=await readFile(target+'.gz');res.writeHead(200,{'Content-Type':'application/json','Content-Encoding':'gzip','Vary':'Accept-Encoding','Cache-Control':'no-cache'});res.end(req.method==='HEAD'?undefined:compressed);return;}catch{}
     }
     res.writeHead(200, { 'Content-Type': types[path.extname(target)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });

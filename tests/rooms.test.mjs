@@ -20,7 +20,7 @@ function face(game,id,player){const s=game.stations.find(s=>s.id===id),a=s.appro
 
 test('HTTP serves the complete app while keeping server files and dependencies private',async t=>{
   const f=await fixture(t);
-  for(const pathname of ['/','/publish.html','/src/main.js','/src/music.js','/src/online.js','/manifest.webmanifest','/health'])assert.equal((await fetch(f.url+pathname)).status,200,pathname);
+  for(const pathname of ['/','/publish.html','/src/main.js','/src/music.js','/src/online.js','/src/dynamics.js','/src/controls.css','/assets/characters-meshes.json','/manifest.webmanifest','/health'])assert.equal((await fetch(f.url+pathname)).status,200,pathname);
   for(const pathname of ['/server.mjs','/src/rooms.mjs','/node_modules/ws/package.json','/.env','/package.json','/README.md','/src/../server.mjs'])assert.equal((await fetch(f.url+pathname)).status,404,pathname);
   assert.deepEqual(await (await fetch(f.url+'/health')).json(),{ok:true});
 });
