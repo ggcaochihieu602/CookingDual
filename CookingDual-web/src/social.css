@@ -1,0 +1,64 @@
+.coop-btn { display:flex; align-items:center; justify-content:center; gap:8px; border:1.5px solid #6c9eac; color:#386c7c; margin-top:12px; width:100%; background:#e4f2ee; }
+.coop-btn svg { width:22px;height:22px; }
+.coop-btn span { font-size:7px;letter-spacing:.5px;color:#719299; }
+.welcome-foot a { color:inherit;text-decoration:none; }
+.welcome-foot a:hover { text-decoration:underline; }
+.field-label { display:block;text-align:left;font-size:12px;font-weight:700;color:#4c716d;margin:18px 0; }
+.field-label input:not([type=range]) { display:block;width:100%;margin-top:7px;border:1.5px solid #c7d9cc;border-radius:10px;background:#fffdf5;padding:13px 14px;font:inherit;font-size:16px;color:#345c60;outline:none; }
+.field-label input:focus { border-color:#4788a3;box-shadow:0 0 0 3px #80bec12c; }
+#room-code { text-transform:uppercase;letter-spacing:7px;font-weight:800; }
+#invite-link { font-size:16px;letter-spacing:0; }
+.room-separator { display:flex;align-items:center;gap:12px;color:#92a18f;font-size:8px;letter-spacing:1px;margin:23px 0 8px; }
+.room-separator:before,.room-separator:after { content:'';height:1px;background:#d5dfce;flex:1; }
+.room-code-display { font-size:34px;font-weight:900;color:#397c92;letter-spacing:8px;background:#e0efe7;border:1px dashed #9dc3b6;padding:15px;border-radius:12px; }
+.room-people { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:17px 0; }
+.room-person { display:flex;flex-direction:column;align-items:center;gap:7px;background:#f5e4d6;padding:15px 6px;border-radius:12px;min-width:0; }
+.room-person.blue { background:#e0edf2; }
+.room-person svg { width:34px;height:34px;color:#c77e58; }
+.room-person.blue svg { color:#4a8eaa; }
+.room-person strong { font-size:12px;overflow-wrap:anywhere; }
+.room-person span { font-size:9px;color:#7c8474; }
+.room-actions { display:flex;gap:9px;margin-bottom:10px; }
+.room-actions .secondary-btn { flex:1;margin:0;padding:10px 7px;font-size:11px; }
+.modal-card .room-tip,.modal-card .local-note { font-size:11px;line-height:1.6;color:#7b806d; }
+.local-note a,.publish-link { color:#337f9b; }
+.publish-link { font-size:11px;text-underline-offset:3px; }
+.text-btn { background:none;border:0;font-size:12px;padding:13px;color:#8c7964; }
+button:disabled { cursor:default;opacity:.5;transform:none!important; }
+.audio-toggle { display:flex;justify-content:space-between;align-items:center;margin:20px 0;font-size:14px;color:#486d66; }
+.audio-toggle input { width:22px;height:22px;accent-color:#438a9b; }
+#music-volume { width:100%;margin-top:18px;accent-color:#438a9b; }
+#volume-value { float:right;color:#71959c; }
+.room-chip { position:fixed;z-index:5;top:65px;left:50%;transform:translateX(-50%);border:1px solid #c5eef6;border-radius:20px;background:#315f79ed;padding:9px 15px;color:#fff5d9;font-size:10px;letter-spacing:.5px;box-shadow:0 2px 0 #29495a55; }
+.room-chip[hidden] { display:none; }
+.modal-card { max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain; }
+@media(max-height:740px) and (min-width:701px) {
+  .welcome .dish-illustration { height:100px; }
+  .welcome .dish-plate { top:30px; }
+  .welcome .sandwich { top:10px; }
+  .coop-btn { min-height:39px;margin-top:9px;font-size:11px; }
+}
+@media(max-height:520px) and (min-width:701px) {
+  .welcome .dish-illustration { display:none; }
+  .welcome h2 { font-size:21px; }
+  .welcome .recipe-components { margin:8px 0;padding:8px 0; }
+  .welcome-foot { margin-top:8px; }
+  .room-chip { top:12px;font-size:8px;padding:7px 10px; }
+}
+@media(max-width:700px) {
+  .brand small { display:none; }
+  .topbar { padding-left:12px;padding-right:12px; }
+  .brand { font-size:20px;gap:6px; }
+  .toolbar { gap:5px; }
+  .coop-btn { min-height:40px;margin-top:8px;font-size:12px; }
+  .welcome { bottom:9px;padding-top:12px;padding-bottom:12px; }
+  .welcome .recipe-components { margin:9px 0;padding:7px 2px; }
+  .welcome-foot { margin-top:9px; }
+  .welcome-description { margin-bottom:7px; }
+  .room-chip { top:168px;left:138px;right:59px;transform:none;font-size:8px;padding:8px 5px; }
+  .room-code-display { font-size:28px;letter-spacing:6px; }
+  .modal-card { width:calc(100% - 26px);padding:28px 20px; }
+}
+@supports(padding:max(0px)) {
+  .modal-card { max-height:calc(100dvh - max(32px, env(safe-area-inset-top)) - env(safe-area-inset-bottom)); }
+}
