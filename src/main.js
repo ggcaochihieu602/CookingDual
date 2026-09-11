@@ -6,6 +6,11 @@ import { loadKitchenAssets } from './assets.js';
 
 const $ = selector => document.querySelector(selector);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
+const hudCache=new Map();
+function hudValue(selector,value,property='textContent'){
+  const key=selector+':'+property;if(hudCache.get(key)===value)return;
+  $(selector)[property]=value;hudCache.set(key,value);
+}
 const keys = new Set();
 const touch = { x: 0, y: 0, work: false, dash:false, joystickId:null, actionId:null, throwId:null };
 let aiming=false,aimOffset={x:0,z:-4},throwAnchor=null,actionStart=0,actionWasHold=false;
@@ -56,6 +61,7 @@ function handleGameEvent(event) {
   if (event.type === 'message') notify(event.message);
   else sound(event.type);
   if (event.type === 'serve') scene?.celebrate(event.points, event.station);
+  if(event.type==='throw')scene?.playThrow(event.playerId||game.player.id);
   if (event.type === 'reset') { guideDismissed = false; $('#guide').hidden = false; }
   if (event.type === 'finish') {
     best = Math.max(best, game.score); game.best = best;
@@ -180,7 +186,7 @@ $('#pause-btn').addEventListener('click', () => { if (game.phase === 'paused') r
 $('#help-btn').addEventListener('click', showHelp);
 $('#graphics-btn').addEventListener('click',()=>{
   if(['playing','countdown'].includes(game.phase))pauseSimulation();
-  showModal('graphics',`<span class="eyebrow">ĐỒ HỌA & HIỆU NĂNG</span><h2>Chơi thoải mái hơn.</h2><p>Chế độ tiết kiệm giảm tải đồ họa và giới hạn 30 hình/giây, phù hợp khi iPad bị nóng.</p><label class="field-label">Chất lượng<select id="graphics-quality"><option value="eco" ${scene.targetFPS===30?'selected':''}>Tiết kiệm · 30 FPS</option><option value="smooth" ${scene.targetFPS===60?'selected':''}>Mượt · 60 FPS</option></select></label><button class="primary-btn" data-action="help-close">Xong rồi ${icon('check')}</button>`);
+  showModal('graphics',`<span class="eyebrow">ĐỒ HỌA & HIỆU NĂNG</span><h2>Đẹp và vừa sức máy.</h2><p>Tự động giữ ánh sáng, bóng và chi tiết nhân vật, cân bằng độ nét để chơi mượt. Chọn Tiết kiệm nếu muốn giảm nóng và pin.</p><label class="field-label">Chất lượng<select id="graphics-quality"><option value="auto" ${scene.budget.mode==='auto'?'selected':''}>Tự động · ưu tiên 60 FPS</option><option value="high" ${scene.budget.mode==='high'?'selected':''}>Sắc nét · 60 FPS</option><option value="eco" ${scene.budget.mode==='eco'?'selected':''}>Tiết kiệm · 30 FPS</option></select></label><button class="primary-btn" data-action="help-close">Xong rồi ${icon('check')}</button>`);
 });
 $('#guide-close').addEventListener('click', () => { guideDismissed = true; $('#guide').hidden = true; });
 $('#modal-close').addEventListener('click', () => { if(['lobby','online-connect'].includes(modalKind)){returnMenu();return;}if (resumesDialog()) resumeGame(); else closeModal(); });
@@ -189,7 +195,7 @@ $('#modal-content').addEventListener('input',event=>{
   if(event.target.id==='music-volume'){music.setVolume(Number(event.target.value)/100);$('#volume-value').textContent=`${event.target.value}%`;}
   if(event.target.id==='music-enabled')music.setEnabled(event.target.checked);
   if(event.target.id==='effects-enabled'){muted=!event.target.checked;saveSound();}
-  if(event.target.id==='graphics-quality'){scene.setQuality(event.target.value);try{localStorage.setItem('cookingdual-quality',event.target.value);}catch{}}
+  if(event.target.id==='graphics-quality'){scene.setQuality(event.target.value);try{localStorage.setItem('cookingdual-render-quality',event.target.value);}catch{}}
 });
 $('#modal-content').addEventListener('click', e => {
   const action = e.target.closest('[data-action]')?.dataset.action;
@@ -299,10 +305,9 @@ function updateHUD(now) {
   if (game.phase === 'countdown') $('#countdown strong').textContent = Math.max(1, Math.ceil(game.countdown));
   if (now > toastUntil) $('#toast').classList.remove('visible');
   if (now - lastHUD < 90) return; lastHUD = now;
-  $('#score').textContent = game.score;
-  $('#combo').textContent = `Chuỗi ×${game.combo}`;
-  $('#star-track').innerHTML = RULES.stars.map((s,i) => `<span class="${game.score >= s ? 'earned' : ''}" title="${i+1} sao · ${s} điểm" aria-label="${i+1} sao: ${s} điểm${game.score>=s?', đã đạt':''}">${icon('star')}</span>`).join('');
-  const time = Math.ceil(game.time); $('#timer').textContent = `${String(Math.floor(time / 60)).padStart(2, '0')}:${String(time % 60).padStart(2, '0')}`;
+  hudValue('#score',game.score);hudValue('#combo',`Chuỗi ×${game.combo}`);
+  hudValue('#star-track',RULES.stars.map((s,i) => `<span class="${game.score >= s ? 'earned' : ''}" title="${i+1} sao · ${s} điểm" aria-label="${i+1} sao: ${s} điểm${game.score>=s?', đã đạt':''}">${icon('star')}</span>`).join(''),'innerHTML');
+  const time=Math.ceil(game.time);hudValue('#timer',`${String(Math.floor(time/60)).padStart(2,'0')}:${String(time%60).padStart(2,'0')}`);
   $('.timer-box').classList.toggle('urgent', time <= 30);
   const existing = new Map([...$('#orders').children].map(el => [Number(el.dataset.id), el]));
   for (const order of game.orders) {
@@ -315,24 +320,25 @@ function updateHUD(now) {
     }
     card.className = `order${order.remaining < 25 ? ' urgent' : ''}`;
     card.querySelector('.order-progress').setAttribute('aria-valuenow',Math.ceil(order.remaining/order.total*100));
-    card.querySelector('.order-progress i').style.width = `${Math.max(0, order.remaining / order.total * 100)}%`; existing.delete(order.id);
+    card.querySelector('.order-progress i').style.transform=`scaleX(${Math.max(0,order.remaining/order.total)})`;existing.delete(order.id);
   }
   for (const el of existing.values()) el.remove();
   const guide = game.tutorial; $('#guide-title').textContent = guide.title; $('#guide-text').textContent = guide.text;
   $('#guide').hidden = guideDismissed || (game.served > 0 && game.time < 100);
   const context = game.context(); $('#context-station').textContent = game.target?.label || 'TÌM MỘT QUẦY BẾP';
   $('#context-action').textContent = context.label; $('#context-key').textContent = context.key; $('#context-key').hidden = !context.key;
-  const hand = game.player.hand; $('#hand-icon').innerHTML = icon(hand?.kind || 'chef'); $('#hand-name').textContent = itemName(hand);
+  const hand=game.player.hand;hudValue('#hand-icon',icon(hand?.kind||'chef'),'innerHTML');hudValue('#hand-name',itemName(hand));
   $('#hand').dataset.empty=String(!hand);
-  $('#hand-parts').innerHTML = isAssembly(hand) ? hand.parts.map(part => icon(part.kind)).join('') : '';
-  $('#action-touch span').textContent=hand?.kind==='extinguisher'?'Giữ để xịt':context.mode==='hold'?game.target?.type==='sink'?'Giữ để rửa':game.target?.type==='trash'?'Giữ để dọn':'Giữ để cắt':game.target?.type==='serve'&&!game.target.item&&isReadyPlate(hand)?'Giao món':hand?'Đặt / ghép':'Cầm / lấy';
-  $('#action-touch svg').innerHTML=`<use href="#i-${hand?.kind==='extinguisher'?'extinguisher':context.mode==='hold'?game.target?.type==='sink'?'water':'knife':game.target?.type==='serve'?'bell':'plus'}"/>`;
+  hudValue('#hand-parts',isAssembly(hand)?hand.parts.map(part=>icon(part.kind)).join(''):'','innerHTML');
+  const actionName=hand?.kind==='extinguisher'?'Giữ để xịt':context.mode==='hold'?game.target?.type==='sink'?'Giữ để rửa':game.target?.type==='trash'?'Giữ để dọn':'Giữ để cắt':game.target?.type==='serve'&&!game.target.item&&isReadyPlate(hand)?'Giao món':hand?'Đặt / ghép':'Cầm / lấy';
+  hudValue('#action-touch span',actionName);$('#action-touch').setAttribute('aria-label',actionName);
+  hudValue('#action-touch svg',`<use href="#i-${hand?.kind==='extinguisher'?'extinguisher':context.mode==='hold'?game.target?.type==='sink'?'water':'knife':game.target?.type==='serve'?'bell':'hand'}"/>`,'innerHTML');
   $('#throw-touch').disabled=!hand;$('#drop-touch').disabled=!hand;
 }
 
 try {
   scene = new KitchenScene($('#stage'), game, await loadKitchenAssets());
-  try{const saved=localStorage.getItem('cookingdual-quality');if(saved)scene.setQuality(saved);}catch{}
+  try{const saved=localStorage.getItem('cookingdual-render-quality');if(saved)scene.setQuality(saved);}catch{}
   let previous=performance.now(),lastRender=0;
   function frame(now) {
     requestAnimationFrame(frame);
@@ -349,7 +355,10 @@ try {
     scene.dynamics.setAim(aiming?{x:game.player.x+aimOffset.x,z:game.player.z+aimOffset.z}:null);
     updateHUD(now);
     const fps=['paused','results','lobby'].includes(game.phase)?8:scene.targetFPS;
-    if(now-lastRender>=1000/fps-1){scene.update(Math.min((now-lastRender)/1000,.15));lastRender=now;}
+    if(now-lastRender>=1000/fps-1){
+      const renderDt=Math.min((now-lastRender)/1000,.15),started=performance.now();scene.update(renderDt);lastRender=now;
+      if(game.phase==='playing')scene.samplePerformance(dt*1000,performance.now()-started,renderDt);
+    }
   }
   requestAnimationFrame(frame);
   // Readable state is exposed only in explicit local test mode.

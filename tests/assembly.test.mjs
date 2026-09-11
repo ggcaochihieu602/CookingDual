@@ -55,6 +55,28 @@ test('throwing a complete plated order serves and returns the same physical plat
   g.throwItem(s);tick(g,1);assert.equal(g.served,1);assert.equal(plate.dirty,true);assert.equal(g.allItems.filter(i=>i.kind==='plate').length,4);assert.equal(g.player.hand,null);
 });
 
+test('throwing a plate onto a cooked floor pan preserves the pan, plated food and all four plates',()=>{
+  for(const contents of [[],[ready('bread')]]){
+    const g=setup(),panStation=g.stations.find(s=>s.id==='pan-a'),pan=panStation.item,meat=ready('meat');
+    panStation.item=null;Object.assign(pan,{food:meat,progress:RULES.cook,heat:5});const floor=g.placeGround(pan,2,3);
+    const plateStation=g.stations.find(s=>s.id==='plates'),plate=plateStation.item;plateStation.item=null;plate.parts=contents;g.player.hand=plate;
+    g.throwItem(floor);tick(g,1);
+    assert.equal(floor.item,pan);assert.equal(pan.food,null);assert.equal(pan.progress,0);assert.equal(pan.heat,0);
+    const plated=g.groundItems.find(e=>e.item.kind==='plate');assert.ok(plated);assert.ok(plated.item.parts.includes(meat));
+    assert.deepEqual(plated.item.parts.map(itemKey).sort(),[...contents,meat].map(itemKey).sort());
+    assert.equal(g.allItems.filter(i=>i.kind==='plate').length,4);assert.equal(g.allItems.filter(i=>i.kind==='pan').length,2);
+    assert.ok(g.canStand(plated.x,plated.z,.16));assert.equal(g.projectiles.length,0);assert.equal(g.player.hand,null);
+  }
+});
+
+test('a dirty or duplicate plate thrown onto a floor pan leaves its cooked food intact',()=>{
+  for(const invalid of [{kind:'plate',parts:[],dirty:true},{kind:'plate',parts:[ready('meat')]}]){
+    const g=setup(),pan=g.stations.find(s=>s.id==='pan-a').item,meat=ready('meat');g.stations.find(s=>s.id==='pan-a').item=null;
+    Object.assign(pan,{food:meat,progress:RULES.cook,heat:5});const floor=g.placeGround(pan,2,3);g.player.hand=invalid;
+    g.throwItem(floor);tick(g,1);assert.equal(pan.food,meat);assert.equal(pan.heat,5);assert.ok(g.groundItems.some(e=>e.item===invalid));
+  }
+});
+
 test('throws reject non-finite payloads, clamp distance, and never lose an out-of-map object',()=>{
   const g=setup();g.player.hand=ready('bread');for(const p of [null,{}, {x:Infinity,z:0},{x:0,z:NaN}])assert.equal(g.throwItem(p),false);
   const end=g.throwTarget({x:1e10,z:1e10});assert.ok(Math.hypot(end.x-g.player.x,end.z-g.player.z)<=RULES.throwRange+.1);

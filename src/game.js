@@ -1,4 +1,5 @@
 import { FLOOR_AREAS, SPAWN, STATIONS } from './level.js';
+import { screenToWorldMotion, worldFacingToMotion } from './movement.js';
 export { STATIONS, FLOOR_AREAS, SPAWN };
 export const RULES=Object.freeze({duration:180,chop:2.2,cook:6,burn:21,burnWarning:14,wash:2,discard:.65,orderLife:100,cadence:26,speed:5.46,radius:.30,characterScale:1.3,dashSpeed:11.44,dashDuration:.19,throwRange:8,fireSpread:6,extinguish:1.2,stars:[100,300,550]});
 export const PLATE_PARTS=Object.freeze(['bread:ready','meat:cooked','vegetable:chopped','sauce:ready']);
@@ -100,13 +101,13 @@ export class KitchenGame {
   }
   dash(){if(this.phase!=='playing'||this.work)return;this.player.dash=RULES.dashDuration;this.player.cooldown=0;this.emit('dash');}
   stepPlayer(dt,input={}){
-    const p=this.player;let dx=Number.isFinite(input.x)?input.x:0,dz=Number.isFinite(input.z)?input.z:0;
-    const magnitude=Math.hypot(dx,dz);if(magnitude>1){dx/=magnitude;dz/=magnitude;}p.walking=magnitude>.05;
+    const p=this.player,motion=screenToWorldMotion(input.x,input.z);let dx=motion.x,dz=motion.z;
+    p.walking=motion.magnitude>.05;
     if(p.walking){p.facingX=dx/Math.hypot(dx,dz);p.facingZ=dz/Math.hypot(dx,dz);}p.cooldown=0;
     if(input.dash&&p.dash<=0)this.dash();
-    if(p.dash>0){dx=p.facingX;dz=p.facingZ;p.walking=true;}
+    if(p.dash>0){const dashMotion=worldFacingToMotion(p.facingX,p.facingZ);dx=dashMotion.x;dz=dashMotion.z;p.walking=true;}
     const speed=p.dash>0?RULES.dashSpeed:RULES.speed;p.dash=Math.max(0,p.dash-dt);
-    const slices=Math.max(1,Math.ceil(speed*dt/.08));
+    const slices=Math.max(1,Math.ceil(Math.hypot(dx,dz)*speed*dt/.08));
     for(let i=0;i<slices;i++){const mx=dx*speed*dt/slices,mz=dz*speed*dt/slices;if(this.canStand(p.x+mx,p.z))p.x+=mx;if(this.canStand(p.x,p.z+mz))p.z+=mz;}
     this.selectTarget();this.work=null;p.spraying=false;
     if(input.work&&(p.hand?.kind==='extinguisher'||!p.walking))this.processWork(dt);
@@ -276,7 +277,14 @@ export class KitchenGame {
       if(merged){if(merged.container){s.item=merged.container;this.placeGround(merged.result,s.x,s.z+s.approach.z);}else s.item=merged;this.emit('assemble');return;}
     }
     const ground=this.groundItems.find(g=>distance(g,end)<.5);
-    if(ground){const merged=this.receiveItem(ground.item,item);if(merged&&!merged.container){ground.item=merged;this.emit('assemble');return;}}
+    if(ground){
+      const merged=this.receiveItem(ground.item,item);
+      if(merged){
+        if(merged.container){ground.item=merged.container;this.placeGround(merged.result,ground.x,ground.z);}
+        else ground.item=merged;
+        this.emit('assemble');return;
+      }
+    }
     this.placeGround(item,end.x,end.z);this.emit('place');
   }
   tickThrows(dt){const flying=this.projectiles;this.projectiles=[];for(const p of flying){p.elapsed+=dt;if(p.elapsed>=p.duration)this.land(p);else this.projectiles.push(p);}}

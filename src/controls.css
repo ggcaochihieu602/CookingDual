@@ -1,46 +1,98 @@
-/* Comfortable thumb zones. Safe-area insets also work in iPad home-screen mode. */
+/* Thumb controls follow the kitchen reference: open white rings, a large hand,
+   and two secondary actions on the inside arc. No live backdrop blur. */
 .field-label select { width:100%;padding:13px 15px;border:1px solid #bacfc6;border-radius:12px;background:#fffaf0;color:#375d60;font:inherit; }
-#throw-touch.aiming { background:#ffc459!important;transform:scale(1.07);box-shadow:0 0 0 8px #ffe7a54a; }
 .touch-actions button { user-select:none;-webkit-user-select:none;touch-action:none; }
-.touch-actions button span { font-weight:800; }
-#throw-touch,#drop-touch { display:grid;place-content:center;justify-items:center;gap:3px;color:#fff9df;border:3px solid #fff4c8aa;box-shadow:0 4px 0 #294e6370; }
-#throw-touch { background:#db884dde;border-radius:50%; }
-#drop-touch { background:#567b8ee6;border-radius:50%; }
-@media(pointer:coarse),(any-pointer:coarse) {
-  body:not(.is-menu) #touch-controls { display:block; }
-  body:not(.is-menu) #joystick { width:162px;height:162px;left:max(48px,env(safe-area-inset-left));bottom:max(44px,calc(env(safe-area-inset-bottom) + 24px));border:3px solid #ecfff5ad;background:#c5e4df50; }
-  body:not(.is-menu) #joystick-knob { width:70px;height:70px;left:calc(50% - 35px);top:calc(50% - 35px);background:#fff5d8df;box-shadow:0 5px 0 #30596950; }
-  body:not(.is-menu) .touch-actions { display:grid;grid-template-columns:82px 108px;grid-template-rows:82px 108px;gap:14px;align-items:center;justify-items:center;right:max(48px,env(safe-area-inset-right));bottom:max(38px,calc(env(safe-area-inset-bottom) + 20px)); }
-  body:not(.is-menu) #action-touch { grid-area:2 / 2;width:108px;height:108px;margin:0;padding:8px;background:#447f9ce8;border:3px solid #d9ffffac; }
-  body:not(.is-menu) #action-touch svg { width:37px;height:37px; }
-  body:not(.is-menu) #action-touch span { font-size:12px; }
-  body:not(.is-menu) #dash-touch { grid-area:2 / 1;width:82px;height:82px;margin:0;display:grid;place-content:center;justify-items:center;gap:3px;border:3px solid #fff4c8aa; }
-  body:not(.is-menu) #dash-touch span,body:not(.is-menu) #throw-touch span { font-size:12px; }
-  body:not(.is-menu) #throw-touch { grid-area:1 / 2;width:88px;height:88px; }
-  body:not(.is-menu) #throw-touch svg { width:32px;height:32px; }
-  body:not(.is-menu) #drop-touch { grid-area:1 / 1;width:74px;height:74px;font-size:11px; }
-  body:not(.is-menu) .hand { left:50%;bottom:27px;transform:translateX(-50%); }
-  body:not(.is-menu) .toast { bottom:110px;max-width:calc(100% - 490px);font-size:11px; }
+@media (pointer:coarse),(any-pointer:coarse) {
+  body:not(.is-menu) #touch-controls {
+    --thumb-edge:clamp(36px,6vw,76px);
+    --thumb-bottom:max(40px,calc(env(safe-area-inset-bottom) + 25px));
+    --joy-size:160px;--joy-knob:68px;
+    --action-size:126px;--throw-size:94px;--dash-size:92px;--drop-size:60px;
+    --cluster-width:253px;--cluster-height:243px;
+    display:block;
+  }
+  body:not(.is-menu) #joystick {
+    width:var(--joy-size);height:var(--joy-size);
+    left:max(var(--thumb-edge),calc(env(safe-area-inset-left) + 20px));
+    bottom:var(--thumb-bottom);
+    border:3px solid #ffffff78;border-radius:50%;background:#ffffff0b;
+    box-shadow:0 1px 2px #213e4929,inset 0 0 0 1px #24465c0a;
+    -webkit-backdrop-filter:none;backdrop-filter:none;
+  }
+  body:not(.is-menu) .joy-arrows { display:none; }
+  body:not(.is-menu) #joystick-knob {
+    width:var(--joy-knob);height:var(--joy-knob);
+    left:calc((100% - var(--joy-knob)) / 2);top:calc((100% - var(--joy-knob)) / 2);
+    border:1px solid #ffffffe0;border-radius:50%;background:#ffffff94;
+    box-shadow:0 2px 6px #2747511a;transform:none;
+  }
+  body:not(.is-menu) .touch-actions {
+    position:absolute;display:block;width:var(--cluster-width);height:var(--cluster-height);
+    right:max(var(--thumb-edge),calc(env(safe-area-inset-right) + 20px));
+    bottom:var(--thumb-bottom);pointer-events:none;
+  }
+  body:not(.is-menu) .touch-actions button {
+    position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:1px;margin:0;padding:7px;border:3px solid #ffffff80;border-radius:50%;
+    color:#fff;background:#ffffff15;box-shadow:0 1px 3px #183a4d21;
+    -webkit-backdrop-filter:none;backdrop-filter:none;
+    pointer-events:auto;transition:background .1s,border-color .1s;
+  }
+  body:not(.is-menu) .touch-actions button svg { width:48%;height:48%;color:#ffffffbd;stroke-width:1.8; }
+  body:not(.is-menu) .touch-actions button span {
+    font-size:11px;font-weight:800;line-height:1.2;text-shadow:0 1px 3px #294555aa;
+    white-space:nowrap;color:#fffffff2;
+  }
+  body:not(.is-menu) .touch-actions button:active { background:#ffffff38;border-color:#fffffff0;transform:none; }
+  body:not(.is-menu) .touch-actions button:focus-visible { outline:3px solid #ffe6a2;outline-offset:5px; }
+  body:not(.is-menu) .touch-actions button:disabled { opacity:.42; }
+  body:not(.is-menu) #action-touch {
+    right:0;bottom:0;width:var(--action-size);height:var(--action-size);
+    border-width:4px;background:#ffffff20;
+  }
+  body:not(.is-menu) #action-touch svg { width:58%;height:58%;color:#ffffffdb; }
+  body:not(.is-menu) #action-touch span { font-size:11px; }
+  body:not(.is-menu) #dash-touch { left:0;bottom:14px;width:var(--dash-size);height:var(--dash-size); }
+  body:not(.is-menu) #throw-touch { left:34px;top:28px;width:var(--throw-size);height:var(--throw-size); }
+  body:not(.is-menu) #drop-touch { right:13px;top:0;width:var(--drop-size);height:var(--drop-size);border-width:2px; }
+  body:not(.is-menu) #drop-touch span { font-size:10px; }
+  body:not(.is-menu) #throw-touch.aiming {
+    background:#ffc96945;border-color:#ffe6a7;box-shadow:0 0 0 6px #fff1c21a;
+  }
+  body:not(.is-menu) #throw-touch.aiming svg { color:#ffe7ab; }
+  body:not(.is-menu) .hand { left:50%;bottom:23px;transform:translateX(-50%); }
+  body:not(.is-menu) .toast { bottom:94px;max-width:calc(100% - 560px);font-size:11px; }
   body:not(.is-menu) .bottom-bar { display:none; }
-  body:not(.is-menu) .toolbar { gap:8px; }
+  body:not(.is-menu) .toolbar { gap:7px; }
 }
-@media(max-height:550px) and (pointer:coarse) {
-  body:not(.is-menu) #joystick { width:140px;height:140px;left:max(40px,env(safe-area-inset-left));bottom:max(28px,env(safe-area-inset-bottom)); }
-  body:not(.is-menu) .touch-actions { grid-template-columns:66px 92px;grid-template-rows:66px 92px;gap:10px;right:max(38px,env(safe-area-inset-right));bottom:max(25px,env(safe-area-inset-bottom)); }
-  body:not(.is-menu) #action-touch { width:92px;height:92px; }
-  body:not(.is-menu) #throw-touch { width:74px;height:74px; }
-  body:not(.is-menu) #dash-touch { width:68px;height:68px; }
-  body:not(.is-menu) #drop-touch { width:60px;height:60px; }
-  body:not(.is-menu) .toast { bottom:76px;max-width:calc(100% - 420px); }
-  body:not(.is-menu) .hand { bottom:20px; }
+@media (max-height:550px) and (pointer:coarse),(max-height:550px) and (any-pointer:coarse) {
+  body:not(.is-menu) #touch-controls {
+    --thumb-edge:clamp(38px,6vw,64px);
+    --thumb-bottom:max(24px,calc(env(safe-area-inset-bottom) + 12px));
+    --joy-size:132px;--joy-knob:58px;
+    --action-size:108px;--throw-size:82px;--dash-size:76px;--drop-size:52px;
+    --cluster-width:220px;--cluster-height:213px;
+  }
+  body:not(.is-menu) #throw-touch { left:28px;top:23px; }
+  body:not(.is-menu) #dash-touch { bottom:10px; }
+  body:not(.is-menu) .touch-actions button span { font-size:10px; }
+  body:not(.is-menu) #action-touch span { font-size:10px; }
+  body:not(.is-menu) #drop-touch span { font-size:9px; }
+  body:not(.is-menu) .toast { bottom:71px;max-width:calc(100% - 490px); }
+  body:not(.is-menu) .hand { bottom:17px; }
 }
-@media(max-width:600px) and (pointer:coarse) {
-  body:not(.is-menu) #joystick { width:132px;height:132px;left:27px;bottom:max(45px,calc(env(safe-area-inset-bottom) + 20px)); }
-  body:not(.is-menu) .touch-actions { grid-template-columns:65px 88px;grid-template-rows:67px 88px;gap:9px;right:25px;bottom:max(38px,calc(env(safe-area-inset-bottom) + 15px)); }
-  body:not(.is-menu) #action-touch { width:88px;height:88px; }
-  body:not(.is-menu) #throw-touch { width:73px;height:73px; }
-  body:not(.is-menu) #dash-touch { width:66px;height:66px; }
-  body:not(.is-menu) #drop-touch { width:60px;height:60px; }
-  body:not(.is-menu) .hand { bottom:220px; }
-  body:not(.is-menu) .toast { bottom:285px;max-width:calc(100% - 50px); }
+@media (max-width:600px) and (pointer:coarse),(max-width:600px) and (any-pointer:coarse) {
+  body:not(.is-menu) #touch-controls {
+    --thumb-edge:25px;--thumb-bottom:max(42px,calc(env(safe-area-inset-bottom) + 24px));
+    --joy-size:124px;--joy-knob:54px;
+    --action-size:96px;--throw-size:76px;--dash-size:66px;--drop-size:50px;
+    --cluster-width:182px;--cluster-height:200px;
+  }
+  body:not(.is-menu) #throw-touch { left:10px;top:22px; }
+  body:not(.is-menu) #dash-touch { left:0;bottom:16px; }
+  body:not(.is-menu) #drop-touch { right:4px;top:0; }
+  body:not(.is-menu) .touch-actions button span,body:not(.is-menu) #action-touch span { font-size:10px; }
+  body:not(.is-menu) #drop-touch span { font-size:9px; }
+  body:not(.is-menu) .hand { bottom:264px; }
+  body:not(.is-menu) .toast { bottom:322px;max-width:calc(100% - 48px); }
 }

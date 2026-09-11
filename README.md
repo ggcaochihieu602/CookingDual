@@ -65,20 +65,13 @@ Ca bếp 180 giây, tối đa ba đơn chờ, thêm đơn mỗi 26 giây; mỗi 
 
 Mở hướng dẫn/cài đặt hoặc ẩn trang sẽ tạm dừng. Khi online, tạm dừng áp dụng cho cả phòng. Nhạc nền gốc tổng hợp bằng Web Audio bắt đầu sau thao tác chạm/bấm đầu tiên.
 
-## iPad và đồ họa
+## iPhone / iPad và đồ họa
 
-Cảm ứng mặc định chế độ **Tiết kiệm · 30 FPS**. Nút đồ họa ở thanh trên cho phép chọn 60 FPS. Bản này giảm mật độ điểm ảnh, bỏ bóng động tốn tài nguyên trên cảm ứng, gộp mô hình tĩnh, giảm chi tiết hình học nhỏ và dùng mặt nước đơn giản. Vẫn giữ bóng sát chân và các vật phẩm/nhân vật 3D.
+Bản 1.2 giữ mô hình, khử răng cưa, ánh sáng phản chiếu, bóng mềm và mặt nước trên cả điện thoại. Mặc định **Tự động** hướng tới 60 FPS, mật độ điểm ảnh tối đa 1,5. Nếu tải cao kéo dài, game giảm nhẹ mật độ rồi mới chuyển 30 FPS; tự tăng lại khi máy ổn định. Chọn **Sắc nét** để giữ 60 FPS/mật độ tối đa 2, hoặc **Tiết kiệm** để giữ 30 FPS/mật độ tối đa 1,25. Không chế độ nào bỏ mô hình hoặc thay mặt nước bằng mảng màu.
 
-Phép đo cùng khung hình 1180 × 820, mô phỏng cảm ứng DPR 2 trên Chromium:
+Quầy và trang trí được gộp theo vật liệu; dùng chung hình học đồ ăn; giao diện chỉ thay nội dung khi cần. Bóng được giữ lại khi cảnh đứng yên và cập nhật tối đa 15 lần/giây lúc có chuyển động, trong khi nhân vật vẫn chuyển động theo nhịp dựng hình. Khi tạm dừng chỉ vẽ 8 FPS; tab ẩn ngừng vẽ. Hai GLB được giảm hình học nhỏ trước khi xuất, giữ nguyên dáng và chi tiết lớn.
 
-| Chỉ số | Bản trước | Bản này |
-|---|---:|---:|
-| Tam giác mỗi khung hình | 1.206.666 | 130.974 |
-| Lệnh vẽ mỗi khung hình | 413 | 93 |
-| Điểm ảnh dựng hình | 3.135.024 | 967.600 |
-| Giới hạn FPS mặc định | 60 | 30 |
-
-Đây là số tải dựng hình, không phải cam kết FPS hoặc nhiệt độ trên thiết bị thật. Chưa kiểm thử Safari/iPad vật lý. Mạng trễ cao vẫn có thể làm điều khiển online chậm; hiện máy chủ xử lý trạng thái chung ở 20 Hz, client nội suy vị trí.
+Các kiểm tra màn hình dùng kích thước iPhone 12 Pro Max (926 × 428 / 428 × 926, DPR 3) và iPad trên Chromium. Chưa đo FPS/nhiệt độ trên Safari iPhone thật; không thể cam kết máy không nóng. Mạng trễ cao vẫn có thể làm điều khiển online chậm; máy chủ xử lý trạng thái chung ở 20 Hz, client nội suy vị trí.
 
 ## Tài nguyên và cấu trúc
 
@@ -87,13 +80,16 @@ Phép đo cùng khung hình 1180 × 820, mô phỏng cảm ứng DPR 2 trên Chr
 - `src/dynamics.js`: đồ dưới đất, đường ném, lửa/bọt và hàng khách.
 - `src/main.js`, `src/controls.css`: giao diện, bàn phím/cảm ứng và âm thanh.
 - `src/rooms.mjs`, `src/online.js`, `server.mjs`: phòng WebSocket và máy chủ cùng địa chỉ với web.
-- `assets/characters.blend`: hai nhân vật low-poly tạo trong Blender theo ảnh tham chiếu; `scripts/build-characters.py` dựng/xuất lại.
+- `assets/ragged-dog.glb`, `assets/dog-tick.glb`: hai mô hình gốc do người dùng cung cấp, giữ nguyên.
+- `assets/ragged-dog-rigged.blend`, `assets/dog-tick-rigged.blend`: mô hình Blender có xương, trọng số da, màu và sáu chuyển động Idle / Walk / Carry / CarryWalk / Work / Throw. `scripts/rig-characters.py` xuất lại các file `*-rigged.glb` dùng trong game.
+- `src/character-animation.js`: phát và chuyển tiếp các chuyển động của bộ xương. `src/movement.js`: bù phối cảnh cho tốc độ di chuyển. `src/render-budget.js`: tự điều chỉnh tải dựng hình.
+- `assets/characters.blend`, `scripts/build-characters.py`: bộ nhân vật cũ dự phòng nếu GLB không tải được.
 - `assets/kitchen.blend`: đồ ăn/đĩa và bốn kiểu bánh; `scripts/build-assets.py` dựng/xuất lại.
 - `vendor/`: Three.js 0.185.1 cùng giấy phép MIT.
 - `tests/`: kiểm thử luật, phòng, trình duyệt và chơi online.
 - `artifacts/`: ảnh và báo cáo kiểm tra, gói `CookingDual-web.zip`.
 
-Mô hình nhân vật được dựng mới theo hình tham khảo; bản low-poly ưu tiên nhận diện và hiệu năng. Không lấy mô hình hoặc sprite từ Overcooked. Chưa có nhiều màn, tài khoản, lưu ca qua restart máy chủ hoặc cache offline.
+Hai nhân vật chính dùng chính hình học GLB người dùng cung cấp. File gốc không có màu/texture; bản rig được tô màu theo ảnh tham chiếu, dùng vật liệu nhám cho thân/áo và bóng cho mắt/mũi. Không lấy mô hình hoặc sprite từ Overcooked. Chưa có nhiều màn, tài khoản, lưu ca qua restart máy chủ hoặc cache offline.
 
 ## Kiểm tra và đóng gói
 
@@ -103,6 +99,7 @@ npm run check
 node tests/browser.cjs
 node tests/features.cjs
 node tests/online.cjs
+node tests/reference-polish.cjs
 ```
 
 Kiểm thử trình duyệt cần Playwright/Chromium; có thể đặt `PLAYWRIGHT_MODULE` và `CHROME_PATH`. Browser/features cần server ở 5173; online tự mở server riêng. `?test=1` cung cấp trạng thái kiểm tra phía client, không cấp quyền sửa trạng thái server. Chạy `scripts/package.ps1` để tạo gói web. Cấu hình vận hành ở [DEPLOY.md](DEPLOY.md).

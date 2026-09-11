@@ -1,6 +1,7 @@
 import * as THREE from 'three';
+import { GLTFLoader } from '../vendor/GLTFLoader.js';
 
-// Blender is an authoring tool only. The web game uses these small static meshes.
+// Kitchen props are baked meshes; the supplied characters retain their Blender skins and clips.
 export async function loadKitchenAssets(){
   try{
     const response=await fetch('/assets/kitchen-meshes.json');if(!response.ok)throw new Error(`Asset request ${response.status}`);
@@ -15,11 +16,20 @@ export async function loadKitchenAssets(){
       }
       models.set(name,model);
     }
-    try {
+    const loader=new GLTFLoader();
+    const rigged=await Promise.allSettled(['ragged-dog','dog-tick'].map(async name=>{
+      const gltf=await loader.loadAsync(`/assets/${name}-rigged.glb`);
+      const model=gltf.scene;model.name=name;model.animations=gltf.animations;model.userData.rigged=true;
+      model.traverse(mesh=>{if(mesh.isMesh){mesh.castShadow=true;mesh.receiveShadow=true;mesh.frustumCulled=false;}});
+      models.set(name,model);
+    }));
+    for(const result of rigged)if(result.status==='rejected')console.warn('Rigged character unavailable:',result.reason.message);
+    if(rigged.some(result=>result.status==='rejected'))try {
       const response=await fetch('/assets/characters-meshes.json');if(!response.ok)throw new Error(`Character request ${response.status}`);
       const characters=await response.json();
       const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.76});
       for(const [name,parts] of Object.entries(characters)){
+        if(models.has(name))continue;
         const model=new THREE.Group();model.name=name;
         for(const part of parts){
           const pivot=new THREE.Group();pivot.name=part.joint;pivot.position.fromArray(part.origin);

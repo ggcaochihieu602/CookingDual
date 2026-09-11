@@ -6,7 +6,9 @@ Hai khu bếp rộng nối bằng cầu, camera 3/4 chính diện khoảng 38°,
 
 Nguồn nguyên liệu có khay vuông phủ gần hết mặt quầy và vật thể 3D ở giữa; khay ẩn khi người chơi đặt vật thật lên ô. Mỗi thớt/bồn đôi là một trạm lớn nhận một vật. Mọi ô còn lại dùng cùng kích thước cho mặt bàn, va chạm và chọn mục tiêu. Bốn đĩa được đặt trên các bàn gần xe từ đầu màn.
 
-Nhân vật thứ nhất là chó vàng áo vá, nhân vật thứ hai màu xanh, dựng bằng Blender theo ảnh. Các bộ phận tay/chân tách nhóm để chuyển động; thân dùng vertex color. Tốc độ và kích thước hiển thị tăng 30%, dash không có thời gian chờ. Khách hàng là các nhân vật low-poly gọn, mỗi đơn gắn một khách; người đầu quay về xe, người sau quay về người trước.
+Nhân vật thứ nhất là chó vàng áo vá, nhân vật thứ hai màu xanh, dùng hai GLB người dùng cung cấp. Blender thêm armature, trọng số tối đa bốn xương mỗi đỉnh, vertex color và sáu clip chuyển động. Client clone bộ xương riêng cho từng người và chuyển tiếp giữa đứng, chạy, cầm, cầm khi chạy, làm việc và ném. Tốc độ nền tăng 30%, dash không có thời gian chờ; tốc độ trục sâu bù phép chiếu camera để khoảng cách nhìn thấy trên màn hình bằng hướng ngang, kể cả analog và dash.
+
+Đồ cầm, trên quầy và dưới đất dùng cùng mô hình và cùng tỉ lệ thế giới, ngoài transform nhân vật. Bánh mì luôn đặt theo hướng ngang dễ đọc, không bị xoay thành cạnh mỏng khi người chơi quay. Độ cao cầm khớp với tay từng nhân vật. Khi quay lưng che mất món, một biểu tượng nhỏ báo vật đang cầm; mô hình vẫn nằm trên tay. Nút cảm ứng là vòng trắng trong suốt, joystick trái và cụm tương tác/nhảy lướt/ném/thả theo cung ngón cái bên phải, có khoảng cách mép màn hình. Khách hàng là các nhân vật low-poly gọn, mỗi đơn gắn một khách; người đầu quay về xe, người sau quay về người trước.
 
 ## Tương tác và bảo toàn đồ vật
 
@@ -26,7 +28,9 @@ Thịt cháy tạo lửa chặn tương tác tại ô. Mỗi sáu giây lan sang
 
 Máy chủ cập nhật phòng 20 Hz, xử lý tương tác tuần tự để không nhân đôi vật. Mỗi đầu bếp có tay, hướng và công việc riêng. Snapshot có đồ trên đất, chuyến ném, lửa, chảo, khách dựa theo đơn và nhân vật theo chỗ phòng. Client nội suy vị trí và chuyến ném; không quyết định kết quả online.
 
-Cảm ứng mặc định 30 FPS/DPR 1, không bóng động/PMREM, mặt nước tĩnh nhẹ. Desktop 60 FPS, DPR tối đa 1,5 và shadow map 1024. Gộp hình học tĩnh bằng vertex color/material tương thích, giảm bevel nhỏ và dùng chung mesh vật phẩm. Vật phẩm, dao, chảo, lửa và người vẫn cập nhật riêng. Khi tạm dừng/menu phòng/kết quả chỉ vẽ 8 FPS; tab ẩn ngừng vẽ. Giới hạn render không thay đổi tốc độ mô phỏng game.
+Mọi thiết bị giữ khử răng cưa, PMREM, nước shader và shadow map 1024. Tự động bắt đầu 60 FPS/DPR tối đa 1,5; tải cao liên tục mới hạ DPR theo bước 0,15 đến sàn 1,15 rồi 30 FPS. Phục hồi chậm để tránh đổi qua lại. Sắc nét giữ 60 FPS/DPR tối đa 2; Tiết kiệm giữ 30 FPS/DPR tối đa 1,25. Thay mật độ điểm ảnh không đặt lại vị trí camera. Camera bám theo có vùng đệm để việc chạy dọc vẫn nhìn thấy rõ.
+
+Gộp hình học tĩnh bằng vertex color/material tương thích và dùng chung mesh vật phẩm. Chỉ cập nhật shadow map khi đồ vật thay đổi hoặc tối đa 15 Hz lúc chuyển động, kể cả kết thúc/chuyển clip. Giao diện HUD giữ SVG khi nội dung không đổi; thanh đơn dùng transform. Khi tạm dừng/menu phòng/kết quả chỉ vẽ 8 FPS; tab ẩn ngừng vẽ. Giới hạn render không thay đổi tốc độ mô phỏng game.
 
 ## Kiểm chứng
 

@@ -31,13 +31,13 @@ export class KitchenDynamics {
   itemView(map,entity){
     const v=this.v,key=itemKey(entity.item);let view=map.get(entity.id);
     if(!view){view={root:v.group(v.scene),key:''};map.set(entity.id,view);}
-    if(view.key!==key){view.root.clear();view.root.add(v.food(entity.item));view.key=key;}
+    if(view.key!==key){view.root.clear();view.root.add(v.food(entity.item));view.key=key;v.shadowDirty=true;}
     return view;
   }
   syncGround(){
     const game=this.v.game,present=new Set();
     for(const entity of game.groundItems){present.add(entity.id);const view=this.itemView(this.ground,entity);view.root.position.set(entity.x,.21,entity.z);}
-    for(const [id,view] of this.ground)if(!present.has(id)){view.root.removeFromParent();this.ground.delete(id);}
+    for(const [id,view] of this.ground)if(!present.has(id)){view.root.removeFromParent();this.ground.delete(id);this.v.shadowDirty=true;}
     this.groundRing.visible=game.target?.type==='ground';if(this.groundRing.visible)this.groundRing.position.set(game.target.x,.193,game.target.z);
   }
   syncThrows(dt){
@@ -48,7 +48,7 @@ export class KitchenDynamics {
       if(view.snapshotElapsed!==entity.elapsed){view.snapshotElapsed=entity.elapsed;view.visualElapsed=entity.elapsed;}else if(game.phase==='playing')view.visualElapsed+=dt;
       const t=Math.min(1,view.visualElapsed/entity.duration);view.root.position.copy(pointAt(entity.start,entity.end,entity.arc,t));view.root.rotation.y=t*Math.PI*2;
     }
-    for(const [id,view] of this.flying)if(!present.has(id)){view.root.removeFromParent();this.flying.delete(id);}
+    for(const [id,view] of this.flying)if(!present.has(id)){view.root.removeFromParent();this.flying.delete(id);this.v.shadowDirty=true;}
   }
   updateFire(){
     const v=this.v,present=new Set();

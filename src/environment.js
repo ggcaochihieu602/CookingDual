@@ -58,7 +58,7 @@ function rocks(v, x, z, size, color) {
 }
 export function buildKitchen(v) {
   const world = v.scene;
-  v.water=createWater(v.mobile);world.add(v.water.mesh);
+  v.water=createWater();world.add(v.water.mesh);
   for (const area of FLOOR_AREAS.filter(a => ['bridge', 'entry'].includes(a.id))) platform(v, area);
   for (const area of FLOOR_AREAS.filter(a => ['main', 'upper'].includes(a.id))) platform(v, area);
   tracks(v, -12.15, 12.15, -3.2, 9.0); tracks(v, -8.95, 8.95, -12.75, -3.2);
@@ -157,7 +157,7 @@ export function buildStation(v, s) {
     v.finish(v.box(supply,1.22,.075,1.22,crate,0,.91,0,.035),'wood');
     for(const x of [-.6,.6])v.box(supply,.048,.14,1.22,crate,x,.995,0,.015);
     for(const z of [-.6,.6])v.box(supply,1.22,.14,.048,crate,0,.995,z,.015);
-    const portions=s.ingredient==='sauce'?[[0,1.18,0]]:s.ingredient==='bread'?[[0,1.03,-.22],[0,.90,.25]]:[[0,1.27,0]];
+    const portions=s.ingredient==='bread'?[[0,1,-.22],[0,1,.25]]:[[0,1,0]];
     for(const [x,scale,z] of portions) {
       const token = v.food({ kind: s.ingredient, state: ['bread', 'sauce'].includes(s.ingredient) ? 'ready' : 'raw' });
       token.scale.setScalar(scale); token.position.set(x, .97, z); supply.add(token);
@@ -168,12 +168,15 @@ export function buildStation(v, s) {
     v.finish(v.box(root, s.width-.17, .024, 1.18, '#ddb67f', 0, 1.01, .025, .055),'wood');
     for (const x of [-s.width*.41, s.width*.41]) v.box(root, .014, .004, 1.00, '#d8ad70', x, 1.025, .025, .002);
     v.box(root, .014, .004, 1.10, '#d8ad70', .10, 1.025, .025, .002);
+    for(const z of [-.49,.54])v.box(root,s.width-.35,.005,.018,'#b8874d',0,1.027,z,.004);
+    v.finish(v.box(root,.42,.12,.24,'#dfb477',0,.95,.73,.07),'wood');
+    const grip=v.mesh(root,v.geo('torus',.075,.017,6,20),'#9b693a',0,1.016,.765);grip.rotation.x=-Math.PI/2;
     const knife = v.group(root, s.width*.32, 1.14, -.20); knife.rotation.y = -.68;knife.rotation.z=-.3;
     v.box(knife, .13, .10, .29, '#774936', 0, .035, .24, .03);
     v.finish(v.box(knife, .42, .06, .49, '#e4eced', -.10, .015, -.12, .014),'metal');
     v.box(knife, .025, .058, .43, '#a1b5b8', -.225, .015, -.12, .005);
     for (const z of [.18, .29]) v.sphere(knife, .022, '#ebd8ad', 0, .09, z, 1, .3, 1);
-    view.knife = knife; view.slotHeight = socket.position.y = 1.04;
+    knife.scale.setScalar(1.15);view.knife = knife; view.slotHeight = socket.position.y = 1.04;
   } else if (s.type === 'pan') {
     v.finish(v.box(root, 1.26, .075, 1.25, '#2e485d', 0, .89, 0, .04),'enamel');
     const controlSide=s.approach.z>0?1:-1;

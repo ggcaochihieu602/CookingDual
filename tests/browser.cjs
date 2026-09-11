@@ -8,7 +8,8 @@ const record = name => { checks.push(name); console.log(`PASS ${name}`); };
 async function navigate(page, stationId) {
   // Route through the real collision map, rather than teleporting to stations.
   await page.evaluate(id => {
-    const { game } = window.__cookingdual, s = game.stations.find(s => s.id === id);
+    const { game, scene } = window.__cookingdual, s = game.stations.find(s => s.id === id);
+    const projection = scene.cameraOffset.y / scene.cameraOffset.length();
     const offset = [s.approach.x, s.approach.z];
     const goal = { x: s.x + offset[0], z: s.z + offset[1] };
     const step = .1, key = (x,z) => `${x},${z}`, asGrid = v => Math.round(v / step);
@@ -31,7 +32,7 @@ async function navigate(page, stationId) {
       for (let i = 0; i < 100; i++) {
         const dx = point.x-game.player.x, dz = point.z-game.player.z, d = Math.hypot(dx,dz);
         if (d < .025) break;
-        game.tick(Math.min(.02,d/5.46),{x:dx/d,z:dz/d});
+        game.tick(Math.min(.02,d/5.46),{x:dx/d,z:dz/d*projection});
         if (i === 99) throw new Error(`Stuck on route to ${id} at ${game.player.x},${game.player.z}`);
       }
     }
@@ -154,9 +155,9 @@ async function snap(page, name) { await page.evaluate(() => new Promise(resolve=
       assert.equal(await p.locator('.order').evaluateAll(cards=>cards.every(card=>card.scrollWidth<=card.clientWidth)),true);
       assert.equal(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
       const joystickRect = await p.locator('#joystick').boundingBox(), actionRect = await p.locator('#action-touch').boundingBox();
-      assert.ok(joystickRect&&actionRect);assert.ok(joystickRect.width>=130);assert.ok(joystickRect.x>=25);assert.ok(actionRect.width>=88);assert.ok(actionRect.x+actionRect.width<=device.viewport.width-24);
-      const mobilePerformance=await p.evaluate(()=>({fps:window.__cookingdual.scene.targetFPS,dpr:window.__cookingdual.scene.renderer.getPixelRatio(),shadows:window.__cookingdual.scene.renderer.shadowMap.enabled,drawCalls:window.__cookingdual.scene.renderer.info.render.calls,triangles:window.__cookingdual.scene.renderer.info.render.triangles}));
-      assert.equal(mobilePerformance.fps,30);assert.equal(mobilePerformance.dpr,1);assert.equal(mobilePerformance.shadows,false);
+      assert.ok(joystickRect&&actionRect);assert.ok(joystickRect.width>=120);assert.ok(joystickRect.x>=25);assert.ok(actionRect.width>=88);assert.ok(actionRect.x+actionRect.width<=device.viewport.width-24);
+      const mobilePerformance=await p.evaluate(()=>({fps:window.__cookingdual.scene.targetFPS,dpr:window.__cookingdual.scene.renderer.getPixelRatio(),shadows:window.__cookingdual.scene.renderer.shadowMap.enabled,antialias:window.__cookingdual.scene.renderer.getContext().getContextAttributes().antialias,environment:Boolean(window.__cookingdual.scene.scene.environment),drawCalls:window.__cookingdual.scene.renderer.info.render.calls,triangles:window.__cookingdual.scene.renderer.info.render.triangles}));
+      assert.equal(mobilePerformance.fps,60);assert.equal(mobilePerformance.dpr,1);assert.equal(mobilePerformance.shadows,true);assert.equal(mobilePerformance.antialias,true);assert.equal(mobilePerformance.environment,true);
       perf[device.name]=mobilePerformance;
       await snap(p, `gameplay-${device.name}`);
       if (device.name === 'ipad') {

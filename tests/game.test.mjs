@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {KitchenGame,RULES,STATIONS,RECIPES,itemKey,isReadyPlate,recipeForPlate} from '../src/game.js';
+import {GROUND_PROJECTION} from '../src/movement.js';
 const ready=kind=>({kind,state:{bread:'ready',meat:'cooked',vegetable:'chopped',sauce:'ready'}[kind]});
 const dish=(id='herb')=>({kind:'plate',parts:RECIPES.find(r=>r.id===id).parts.map(key=>{const [kind,state]=key.split(':');return {kind,state};})});
 const setup=()=>{const g=new KitchenGame();g.reset('playing');return g;};
@@ -20,9 +21,9 @@ test('new map has top-row food, two double boards, one double sink and four phys
   assert.equal(station(g,'extinguisher').item.kind,'extinguisher');
 });
 
-test('speed is increased by 30%, diagonal normalized, wall collision prevents dashing through boxes',()=>{
+test('speed is increased by 30%, projected diagonal normalized, wall collision prevents dashing through boxes',()=>{
   const a=setup(),b=setup();advance(a,.4,{x:1});advance(b,.4,{x:1,z:1});
-  assert.ok(Math.abs(a.player.x-RULES.speed*.4)<1e-7);assert.ok(Math.abs(Math.hypot(b.player.x,b.player.z-3.2)-RULES.speed*.4)<1e-7);
+  assert.ok(Math.abs(a.player.x-RULES.speed*.4)<1e-7);assert.ok(Math.abs(Math.hypot(b.player.x,(b.player.z-3.2)*GROUND_PROJECTION)-RULES.speed*.4)<1e-7);
   face(a,'counter-a');a.dash();advance(a,1,{x:0,z:-1,dash:true});assert.ok(a.player.z>-.5);assert.ok(a.canStand(a.player.x,a.player.z));
   assert.equal(a.player.cooldown,0);a.work=null;a.dash();assert.equal(a.player.dash,RULES.dashDuration);
 });

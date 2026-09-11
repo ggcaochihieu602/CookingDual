@@ -23,6 +23,13 @@ test('HTTP serves the complete app while keeping server files and dependencies p
   for(const pathname of ['/','/publish.html','/src/main.js','/src/music.js','/src/online.js','/src/dynamics.js','/src/controls.css','/assets/characters-meshes.json','/manifest.webmanifest','/health'])assert.equal((await fetch(f.url+pathname)).status,200,pathname);
   for(const pathname of ['/server.mjs','/src/rooms.mjs','/node_modules/ws/package.json','/.env','/package.json','/README.md','/src/../server.mjs'])assert.equal((await fetch(f.url+pathname)).status,404,pathname);
   assert.deepEqual(await (await fetch(f.url+'/health')).json(),{ok:true});
+  for(const name of ['ragged-dog','dog-tick']){
+    const response=await fetch(`${f.url}/assets/${name}-rigged.glb`);
+    assert.equal(response.status,200);assert.equal(response.headers.get('content-type'),'model/gltf-binary');
+    const buffer=Buffer.from(await response.arrayBuffer());assert.equal(buffer.toString('ascii',0,4),'glTF');
+    const gltf=JSON.parse(buffer.toString('utf8',20,20+buffer.readUInt32LE(12)));
+    assert.equal(gltf.skins.length,1);assert.deepEqual(gltf.animations.map(a=>a.name).sort(),['Carry','CarryWalk','Idle','Throw','Walk','Work']);
+  }
 });
 
 test('room creation, join, capacity, host-only start and shared pause/resume',async t=>{
