@@ -1,4 +1,4 @@
-# CookingDual — bản cập nhật 11/09/2026
+# CookingDual — bản cập nhật 12/09/2026
 
 ## Bản 1.2.0 — rig GLB và cải thiện theo reference
 
@@ -13,7 +13,7 @@
 - [x] Sửa lỗi ném đĩa vào chảo thịt chín dưới đất làm mất thịt; thêm kiểm tra bảo toàn đồ vật.
 - [x] 39 kiểm tra luật/phòng/HTTP, 15 browser, 9 cơ chế, 9 online và 8 kiểm tra rig/tỉ lệ/giao diện mới đều đạt; không có lỗi runtime hay tải asset.
 - [x] Mô phỏng Chromium màn hình iPhone 12 Pro Max: 926×428 và 428×926 / DPR 3; iPad 1180×820. Chưa kiểm tra Safari trên máy thật.
-- [ ] Cập nhật GitHub main và xác nhận website nhận bản 1.2.0.
+- [x] GitHub main nhận bản 1.2.0, commit `c8ed208`. Website đã xác nhận ngày 12/09/2026: hai GLB có hash trùng bản kiểm tra, sáu clip mỗi nhân vật, phòng WSS hai người, dash đồng bộ, pause và đóng phòng thử đều đạt.
 
 Phép đo hai nhân vật trong khung hình iPhone ngang: bản 1.1 dùng 79 lệnh vẽ/132.294 tam giác, 396.328 điểm ảnh và 30 FPS (không bóng/AA/PMREM). Bản 1.2 đứng yên 73 lệnh/196.994 tam giác, chuyển động trung bình 88 lệnh/247.452 tam giác (gồm shadow pass); 891.738 điểm ảnh, mục tiêu 60 FPS với đầy đủ ánh sáng. 120 khung chuyển động chỉ cần 30 lần vẽ bóng; đứng yên không vẽ bóng lại. Đây là so sánh tải dựng hình, không phải số FPS đo trên điện thoại.
 
@@ -39,4 +39,3 @@ Hoàn thành 14 mục yêu cầu trong bản 1.1.0.
 Hiệu năng Chromium mô phỏng iPad 1180×820/DPR2: 1.206.666 → 130.974 tam giác/khung, 413 → 93 lệnh vẽ, 3.135.024 → 967.600 điểm ảnh. Mặc định cảm ứng 30 FPS; chưa đo nhiệt hoặc FPS trên thiết bị iPad thật.
 
 Không tạo hẹn giờ và không dùng credit reset theo lời người dùng. Thực hiện trực tiếp trong task này.
-
