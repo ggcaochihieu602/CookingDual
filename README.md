@@ -32,7 +32,7 @@ Chọn **Chơi cùng bạn → nhập tên → Tạo phòng mới**, gửi liên
 | Dash liên tục | Giữ Shift | Giữ nút Lướt |
 | Tạm dừng | Escape | Nút tạm dừng |
 
-Đứng gần và hướng về vật muốn tương tác. Viền vàng chọn quầy; vòng sáng chọn đồ dưới đất. Chạm nhanh nút tương tác để nhặt đồ khỏi thớt/bồn, giữ để cắt/rửa. Khi đang cầm bình chữa cháy, giữ để xịt theo hướng nhìn; có thể di chuyển trong lúc xịt.
+Đứng gần vật muốn tương tác: game hỗ trợ chọn ô/vật gần nhất kể cả khi nhìn ngang hoặc quay lưng. Hướng thẳng vào ô giúp chọn chính xác ở góc quầy. Viền trắng chọn quầy; vòng trắng chọn đồ dưới đất. Vòng màu và mũi tên dưới chân báo hướng đầu bếp. Chạm nhanh nút tương tác để nhặt đồ khỏi thớt/bồn, giữ để cắt/rửa. Khi đang cầm bình chữa cháy, giữ để xịt theo hướng nhìn; có thể di chuyển trong lúc xịt.
 
 ## Nấu bánh mì
 
@@ -54,22 +54,28 @@ Món phải khớp chính xác một đơn đang chờ. Phiếu chỉ hiện ả
 ## Đồ vật, chảo, đĩa và lửa
 
 - Mọi ô trống đều nhận đồ, kể cả nguồn nguyên liệu, thớt, bếp và bồn. Nguồn chỉ phát nguyên liệu khi tay và mặt quầy đều trống. Ô đang có đồ không bị ghi đè.
-- Ban đầu có **bốn đĩa thật** trên các ô gần xe bánh mì. Giao xong, đĩa bẩn xuất hiện cạnh xe. Cầm tới bồn ở bếp trên, đặt xuống và giữ để rửa hai giây. Đĩa sạch nằm cạnh bồn. Nếu hết mặt bàn trống, đĩa được đặt xuống sàn gần đó; không biến mất.
+- Ban đầu có **bốn đĩa thật** trên các ô gần xe bánh mì. Giao xong, đĩa bẩn xếp thành chồng cạnh xe. Mang cả chồng tới bồn ở bếp trên; có thể thêm đĩa bẩn vào bồn đang có đĩa, giữ nguyên tiến độ. Giữ nút để rửa liên tục, hai giây mỗi đĩa. Đĩa sạch nằm cạnh bồn. Nếu hết mặt bàn trống, đĩa được đặt xuống sàn cạnh khay ra; không biến mất hoặc làm gián đoạn việc rửa.
 - Mỗi bếp có một chảo có thể nhấc đi. Chảo chỉ nấu khi nằm trên bếp; nhấc khỏi bếp sẽ dừng nấu/cháy. Cầm chảo có thịt chín tới đĩa hoặc nguyên liệu để trút, chảo rỗng vẫn ở trên tay. Hoặc cầm đĩa/món lấy thịt từ chảo đang đặt xuống.
-- Đồ có thể thả, nhặt, ghép dưới đất hoặc ném theo đường ngắm. Đồng đội đứng tại điểm rơi có thể bắt; mặt quầy trống nhận đồ, chảo nhận thịt đã cắt, xe nhận món đúng đơn. Điểm không nhận được đồ sẽ làm đồ rơi xuống sàn an toàn.
-- Thịt cháy gây lửa, lan sang các ô sát bên mỗi sáu giây. Lấy bình chữa cháy ở đầu trái dãy thớt, giữ để xịt. Dập lửa trước khi lấy đồ khỏi quầy cháy. Mang đồ hỏng tới thùng rác bên phải xe; thức ăn bị bỏ, chảo/đĩa vẫn dùng tiếp.
+- Đồ có thể thả, nhặt, ghép dưới đất hoặc ném theo đường ngắm. Đường ném bắt đầu từ món trên tay, góc xuất phát khoảng 30° so với mặt đất. Đồng đội đứng tại điểm rơi có thể bắt; mặt quầy trống nhận đồ, chảo nhận thịt đã cắt, xe nhận món đúng đơn. Điểm không nhận được đồ sẽ làm đồ rơi xuống sàn an toàn.
+- Thịt cháy gây lửa, lan sang các ô sát bên mỗi sáu giây. Lấy bình chữa cháy ở đầu trái dãy bếp rán, giữ để xịt. Dập lửa trước khi lấy đồ khỏi quầy cháy. Mang đồ hỏng tới thùng rác bên phải xe; thức ăn bị bỏ, chảo/đĩa vẫn dùng tiếp.
 
 ## Điểm và nhịp chơi
 
-Ca bếp 180 giây, tối đa ba đơn chờ, thêm đơn mỗi 26 giây; mỗi đơn có 100 giây. Giao đúng được 100 điểm cộng thưởng thời gian và chuỗi. Hết hạn đơn trừ 15 điểm (không âm), mất chuỗi. Các mốc sao: 100 / 300 / 550 điểm. Kỷ lục và cài đặt âm thanh/đồ họa được lưu trên trình duyệt.
+Ca bếp 180 giây, tối đa ba đơn chờ, thêm đơn mỗi 26 giây; mỗi đơn có 100 giây. Giá bánh thịt nguyên bản 100, thêm rau hoặc tương ớt 110, đầy đủ 120. Thanh thời gian còn ít nhất 50% là xanh (100% giá), từ 25% đến dưới 50% là vàng (90%), dưới 25% là đỏ (80%).
+
+Giao theo thứ tự phiếu từ trái sang phải giữ chuỗi: món thứ nhất chưa có tip, chuỗi 2 thêm 10, chuỗi 3 thêm 20, từ chuỗi 4 thêm 40 mỗi món. Giao vượt thứ tự vẫn có tiền món nhưng mất chuỗi và không tip; đơn hết hạn cũng làm mất chuỗi, trừ tối đa 15 điểm để điểm không âm.
+
+Các mốc **1–5 sao: 100 / 240 / 380 / 520 / 660**. Mốc tối đa 660 cao hơn 550 cũ đúng 20%. Năm đơn đầu giao đúng thứ tự khi còn xanh cho 550 tiền món + 110 tip = 660; giao chậm phải làm thêm món. Bảng kết quả toàn màn hình hiện sao, tiền món, tip, phạt, tổng điểm và hai nhân vật; có nút chia sẻ/chơi lại. Kỷ lục và cài đặt âm thanh/đồ họa được lưu trên trình duyệt.
 
 Mở hướng dẫn/cài đặt hoặc ẩn trang sẽ tạm dừng. Khi online, tạm dừng áp dụng cho cả phòng. Nhạc nền gốc tổng hợp bằng Web Audio bắt đầu sau thao tác chạm/bấm đầu tiên.
 
 ## iPhone / iPad và đồ họa
 
-Bản 1.2 giữ mô hình, khử răng cưa, ánh sáng phản chiếu, bóng mềm và mặt nước trên cả điện thoại. Mặc định **Tự động** hướng tới 60 FPS, mật độ điểm ảnh tối đa 1,5. Nếu tải cao kéo dài, game giảm nhẹ mật độ rồi mới chuyển 30 FPS; tự tăng lại khi máy ổn định. Chọn **Sắc nét** để giữ 60 FPS/mật độ tối đa 2, hoặc **Tiết kiệm** để giữ 30 FPS/mật độ tối đa 1,25. Không chế độ nào bỏ mô hình hoặc thay mặt nước bằng mảng màu.
+Bản 1.3 giữ mô hình, khử răng cưa, ánh sáng phản chiếu, bóng mềm và mặt nước trên cả điện thoại. Mặc định **Tự động** hướng tới 60 FPS, mật độ điểm ảnh tối đa 1,5. Nếu tải cao kéo dài, game giảm nhẹ mật độ rồi mới chuyển 30 FPS; tự tăng lại khi máy ổn định. Chọn **Sắc nét** để giữ 60 FPS/mật độ tối đa 2, hoặc **Tiết kiệm** để giữ 30 FPS/mật độ tối đa 1,25. Không chế độ nào bỏ mô hình hoặc thay mặt nước bằng mảng màu.
 
-Quầy và trang trí được gộp theo vật liệu; dùng chung hình học đồ ăn; giao diện chỉ thay nội dung khi cần. Bóng được giữ lại khi cảnh đứng yên và cập nhật tối đa 15 lần/giây lúc có chuyển động, trong khi nhân vật vẫn chuyển động theo nhịp dựng hình. Khi tạm dừng chỉ vẽ 8 FPS; tab ẩn ngừng vẽ. Hai GLB được giảm hình học nhỏ trước khi xuất, giữ nguyên dáng và chi tiết lớn.
+Riêng màn hình tablet (hai chiều tối thiểu 700 × 600 CSS pixel), joystick còn 80% (128 px), cao hơn 30 px; cả hai cụm điều khiển cách mép 94–126 px. Kích thước trên điện thoại giữ nguyên. Hành lang giữa hai bếp rộng ba ô; thớt đôi chuyển xuống trái phía trước, bếp chuyển lên dãy sau và cách hành lang một ô. Dãy quầy dưới được bịt kín, vỉa hè chỉ dành cho khách.
+
+Quầy và trang trí được gộp theo vật liệu; dùng chung hình học đồ ăn; giao diện chỉ thay nội dung khi cần. Bóng được giữ lại khi cảnh đứng yên; khi di chuyển, bóng cập nhật cùng từng tư thế được vẽ để tránh nhấp nháy. Mesh nhân vật vẫn đổ bóng ra sàn nhưng không tự nhận bóng gây nhiễu trên da/áo. Khi tạm dừng chỉ vẽ 8 FPS; tab ẩn ngừng vẽ. Hai GLB được giảm hình học nhỏ trước khi xuất, giữ nguyên dáng và chi tiết lớn.
 
 Các kiểm tra màn hình dùng kích thước iPhone 12 Pro Max (926 × 428 / 428 × 926, DPR 3) và iPad trên Chromium. Chưa đo FPS/nhiệt độ trên Safari iPhone thật; không thể cam kết máy không nóng. Mạng trễ cao vẫn có thể làm điều khiển online chậm; máy chủ xử lý trạng thái chung ở 20 Hz, client nội suy vị trí.
 
@@ -100,6 +106,8 @@ node tests/browser.cjs
 node tests/features.cjs
 node tests/online.cjs
 node tests/reference-polish.cjs
+node tests/update-13.cjs
+node tests/interaction-visuals.cjs
 ```
 
 Kiểm thử trình duyệt cần Playwright/Chromium; có thể đặt `PLAYWRIGHT_MODULE` và `CHROME_PATH`. Browser/features cần server ở 5173; online tự mở server riêng. `?test=1` cung cấp trạng thái kiểm tra phía client, không cấp quyền sửa trạng thái server. Chạy `scripts/package.ps1` để tạo gói web. Cấu hình vận hành ở [DEPLOY.md](DEPLOY.md).

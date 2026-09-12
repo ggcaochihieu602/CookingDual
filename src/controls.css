@@ -96,3 +96,11 @@
   body:not(.is-menu) .hand { bottom:264px; }
   body:not(.is-menu) .toast { bottom:322px;max-width:calc(100% - 48px); }
 }
+/* Tablets have a wider thumb reach than phones. Keep both phone layouts intact. */
+@media (min-width:700px) and (min-height:600px) and (pointer:coarse), (min-width:700px) and (min-height:600px) and (any-pointer:coarse) {
+  body:not(.is-menu) #touch-controls {
+    --thumb-edge:clamp(94px,10vw,126px);
+    --joy-size:128px;--joy-knob:54.4px;
+  }
+  body:not(.is-menu) #joystick { bottom:calc(var(--thumb-bottom) + 30px); }
+}

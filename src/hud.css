@@ -49,3 +49,13 @@ body:not(.is-menu) .order-dish:before{box-shadow:0 1px 1px #67867e42}
 /* Inventory glyph for a carried prop hidden behind the chef's body. */
 .held-badge{position:absolute;top:0;left:0;width:32px;height:32px;display:grid;place-items:center;background:#fff4d9ed;border:2px solid #ffffffc9;border-radius:50%;color:#946b32;box-shadow:0 2px 0 #315f7160;pointer-events:none}
 .held-badge svg{width:23px;height:23px;stroke-width:1.9}
+/* Five stars fit the same score area. The three bands match the sale price. */
+body:not(.is-menu) .star-track{right:0;gap:5px!important;padding:7px 10px}
+body:not(.is-menu) .star-track svg{width:27px;height:27px}
+body:not(.is-menu) .order[data-band="green"] .order-progress i{background:#b8df4b}
+body:not(.is-menu) .order[data-band="yellow"] .order-progress i{background:#f3c75a}
+body:not(.is-menu) .order[data-band="red"] .order-progress i{background:#f08058}
+body:not(.is-menu) .order-progress{position:relative}
+body:not(.is-menu) .order-progress:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 0 24%,#fff8bfbd 24% 26%,transparent 26% 49%,#fff8bfbd 49% 51%,transparent 51%)}
+@media(max-width:1250px){body:not(.is-menu) .star-track svg{width:24px;height:24px}}
+@media(max-height:520px) and (min-width:701px),(max-width:700px){body:not(.is-menu) .star-track{right:0;gap:3px!important;padding:5px 7px}body:not(.is-menu) .star-track svg{width:19px;height:19px}}

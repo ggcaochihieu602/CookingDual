@@ -3,6 +3,7 @@ import { KitchenScene } from './scene.js';
 import { OnlineSession } from './online.js';
 import { KitchenMusic } from './music.js';
 import { loadKitchenAssets } from './assets.js';
+import { orderPrice, tipForCombo } from './scoring.js';
 
 const $ = selector => document.querySelector(selector);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -136,12 +137,12 @@ function clearInput() {
   if(online?.active)online.input({x:0,z:0,work:false},performance.now(),true);
 }
 function closeModal() {
-  $('#modal').hidden = true; modalKind = null;
+  $('#modal').hidden = true;delete $('#modal').dataset.kind; modalKind = null;
   const target = lastFocus?.isConnected ? lastFocus : $('#start-btn'); target?.focus({ preventScroll: true });
 }
 function showModal(kind, content) {
   clearInput(); lastFocus = document.activeElement; modalKind = kind;
-  $('#modal-content').innerHTML = content; $('#modal').hidden = false;
+  $('#modal-content').innerHTML = content; $('#modal').hidden = false;$('#modal').dataset.kind=kind;
   const heading = $('#modal-content h2'); if (heading) heading.id = 'modal-title';
   $('#modal-close').hidden = kind === 'results';
   requestAnimationFrame(() => $('.modal-card').focus({ preventScroll: true }));
@@ -158,20 +159,23 @@ function showPause() {
 }
 function showHelp() {
   if (['playing', 'countdown'].includes(game.phase)) pauseSimulation();
-  showModal('help', `<span class="eyebrow">CÔNG THỨC CỦA BẾP NHÀ</span><h2>Bánh mì trong 4 bước.</h2><p>Mỗi lần chỉ cầm một vật. Đứng gần, hướng về quầy có viền sáng rồi thao tác.</p><div class="help-steps">
+  showModal('help', `<span class="eyebrow">CÔNG THỨC CỦA BẾP NHÀ</span><h2>Bánh mì trong 4 bước.</h2><p>Đến gần quầy hoặc đồ vật có viền trắng rồi thao tác. Không cần quay mặt chính xác về phía quầy.</p><div class="help-steps">
     ${icon('knife')}<div><strong>1. Cắt thịt; cắt rau khi khách cần</strong><span>Lấy nguyên liệu → Space đặt lên thớt → thả Space → giữ E trong 2 giây → Space lấy lại.</span></div>
     ${icon('pan')}<div><strong>2. Nấu trong chảo</strong><span>Cho thịt đã cắt vào chảo trên bếp: 6 giây để chín, thêm 21 giây mới cháy. Nhấc chảo khỏi bếp để ngừng nấu. Cầm đĩa lấy thịt, hoặc cầm chảo đổ vào đĩa/phần nhân; chảo rỗng được giữ lại.</span></div>
     ${icon('plate')}<div><strong>3. Ghép món trước, thêm đĩa sau</strong><span>Cầm nguyên liệu đã sẵn sàng, nhấn Space tại nguyên liệu khác trên bàn để ghép. Có thể ghép cả chiếc bánh chưa cần đĩa! Sau đó cầm đĩa lấy món, hoặc mang món tới đĩa. Rau và tương ớt thêm đúng theo phiếu.</span></div>
-    ${icon('bell')}<div><strong>4. Giao món và mang đĩa đi rửa</strong><span>Có bốn đĩa đặt sẵn gần xe bánh mì. Giao đúng phiếu tại một trong ba ô. Đĩa bẩn ở cạnh xe: cầm tới bồn rửa phía trên, đặt vào rồi giữ E. Lấy đĩa sạch trên bàn cạnh bồn.</span></div>
+    ${icon('bell')}<div><strong>4. Giao món và mang đĩa đi rửa</strong><span>Có bốn đĩa đặt sẵn gần xe bánh mì. Đĩa bẩn xếp thành chồng cạnh xe; gom cả chồng tới bồn, có thể thêm vào đĩa đang rửa. Giữ E để rửa liên tục, 2 giây mỗi đĩa; đĩa sạch ra bàn cạnh bồn.</span></div>
+    ${icon('star')}<div><strong>5 sao và tiền tip</strong><span>Mốc sao: 100 / 240 / 380 / 520 / 660. Giao lần lượt từ phiếu đầu tiên: chuỗi 2 thêm 10 tip, chuỗi 3 thêm 20, từ chuỗi 4 thêm 40. Giao vượt thứ tự hoặc để hết hạn sẽ mất chuỗi. Thanh xanh còn ít nhất 50%: đủ giá; vàng 25–50%: 90%; đỏ dưới 25%: 80%. Giá bánh thịt 100, thêm rau hoặc tương 110, đầy đủ 120.</span></div>
     ${icon('throw')}<div><strong>Ném, thả và chuyền đồ</strong><span>Q thả xuống đất; Space nhặt hoặc ghép với món trên tay. Giữ R, di chuột để ngắm, thả R để ném. Trên cảm ứng: giữ nút Ném, kéo để chỉnh điểm rơi rồi thả. Có thể ném cho bạn, lên bàn, vào chảo hoặc giao món.</span></div>
     ${icon('extinguisher')}<div><strong>Dập lửa và cứu chiếc chảo</strong><span>Lửa lan sang bàn bên cạnh. Cầm bình đỏ ở góc trái, hướng vào lửa và giữ E/nút xịt. Sau khi dập, cầm chảo cháy tới thùng rác để đổ đồ hỏng; chảo rỗng vẫn trên tay.</span></div>
     </div><div class="recipe-variants">${RECIPES.map(recipe=>`<div><strong>${recipe.title}</strong><span>${recipe.note}</span></div>`).join('')}</div><div class="help-keys"><span><kbd>WASD / ↑←↓→</kbd>Di chuyển</span><span><kbd>Space</kbd>Cầm / đặt / ghép</span><span><kbd>Giữ E</kbd>Cắt / rửa / xịt</span><span><kbd>Q</kbd>Thả xuống đất</span><span><kbd>Giữ R + chuột</kbd>Ngắm / ném</span><span><kbd>Giữ Shift</kbd>Lướt liên tục</span></div><p style="font-size:11px">Cảm ứng: chạm nhanh để lấy; giữ để cắt/rửa/xịt. Ghép các nguyên liệu không có đĩa sẽ giữ món trên tay. Mọi mặt bàn trống đều có thể đặt đồ.</p><button class="primary-btn" data-action="help-close">Đã hiểu rồi ${icon('check')}</button>`);
 }
 function showResults() {
   const stars = RULES.stars.map(s => `<svg class="${game.score >= s ? 'earned' : ''}"><use href="#i-star"/></svg>`).join('');
-  const title = game.stars === 3 ? 'Đầu bếp cừ khôi!' : game.served ? 'Một ca bếp thật vui!' : 'Thử thêm một ca nhé!';
-  const hint = game.stars === 3 ? 'Bánh giòn, thịt thơm, khách vui. Một ca bếp trọn vẹn!' : game.served ? `Thêm một chút phối hợp giữa cắt và rán để chạm mốc ${RULES.stars[game.stars]} điểm nhé.` : 'Mẹo nhỏ: cho thịt lên bếp trước, rồi tranh thủ cắt rau.';
-  showModal('results', `<div class="results-content"><span class="eyebrow">CA BẾP ĐÃ HOÀN THÀNH · MÀN 01</span><div class="result-stars">${stars}</div><h2 id="modal-title">${title}</h2><div class="results-score">${game.score}</div><span class="result-best">ĐIỂM CA NÀY &nbsp; · &nbsp; KỶ LỤC: ${best}</span><div class="result-stats"><div><strong>${game.served}</strong>Món đã giao</div><div><strong>${game.maxCombo}</strong>Chuỗi tốt nhất</div><div><strong>${game.missed}</strong>Đơn lỡ hẹn</div></div><p>${hint}</p><button class="primary-btn" data-action="restart">Nấu thêm một ca ${icon('arrow')}</button><button class="secondary-btn" data-action="menu">Về bếp chính</button></div>`);
+  const title=game.stars?'Hoàn thành!':'Hết giờ!';
+  const hint=game.stars===5?'Một ca bếp 5 sao!':`Mốc tiếp theo: ${RULES.stars[game.stars]} điểm`;
+  let portraits=[];try{portraits=scene.captureCharacterPortraits();}catch(error){console.warn('Portrait preview unavailable',error);}
+  const players=game.players.map((player,i)=>`<figure class="result-chef"><figcaption>${icon('chef')}<span>${escapeHTML(player.name)}</span></figcaption>${portraits[i]?`<img src="${portraits[i]}" alt="${player.character==='dog-tick'?'Nhân vật xanh':'Chó vàng áo vá'}" draggable="false">`:`<div class="result-fallback">${icon('chef')}</div>`}</figure>`).join('');
+  showModal('results',`<div class="results-content"><div class="result-wallpaper" aria-hidden="true">${Array.from({length:24},(_,i)=>`<span>${icon(['bread','knife','plate','chef'][i%4])}</span>`).join('')}</div><header class="result-ribbon"><h2 id="modal-title">${title}</h2><span>MÀN 01<br>Bếp đảo xanh</span></header><section class="result-summary"><div class="result-stars" role="img" aria-label="${game.stars} trên 5 sao">${stars}</div><dl class="result-ledger"><div><dt>${icon('order')}<span>Tiền món <small>${game.served} đơn hoàn thành</small></span></dt><dd>${game.revenue||0}</dd></div><div><dt>${icon('star')}<span>Tiền tip <small>Chuỗi tốt nhất ×${game.maxCombo}</small></span></dt><dd>${game.tips||0}</dd></div><div><dt>${icon('clock')}<span>Đơn lỡ hẹn <small>${game.missed} đơn</small></span></dt><dd>${game.penalties?'−'+game.penalties:'0'}</dd></div><div class="result-total"><dt>Tổng kết</dt><dd class="results-score">${game.score}</dd></div></dl><p class="result-hint">${hint}</p><span class="result-best">KỶ LỤC: ${best}</span></section><section class="result-players ${game.players.length===1?'solo':''}" aria-label="Đầu bếp của ca này">${players}</section><nav class="result-actions" aria-label="Sau ca bếp"><button class="secondary-btn" data-action="share-results">${icon('share')}Chia sẻ</button><button class="primary-btn" data-action="restart">Nấu thêm một ca ${icon('arrow')}</button><button class="text-btn" data-action="menu">Về bếp chính</button></nav></div>`);
   if(online.active&&online.playerId!==online.room?.hostId){const restart=$('[data-action="restart"]');restart.disabled=true;restart.textContent='Chờ chủ phòng mở ca mới';}
 }
 function resumeGame() { unlockSound();clearInput();if(online.active){resumeRequested=true;online.send('resume');return;} closeModal();game.resume(); }
@@ -202,6 +206,11 @@ $('#modal-content').addEventListener('click', e => {
   if (action === 'resume') resumeGame();
   if (action === 'restart') startGame();
   if (action === 'menu') returnMenu();
+  if(action==='share-results'){
+    const text=`CookingDual: ${game.score} điểm, ${game.stars}/5 sao, ${game.served} món!`,url=new URL('/',location.href).href;
+    if(navigator.share)navigator.share({title:'CookingDual',text,url}).catch(()=>{});
+    else navigator.clipboard?.writeText(`${text} ${url}`).then(()=>{const button=$('[data-action="share-results"]');if(button)button.textContent='Đã sao chép kết quả';}).catch(()=>{});
+  }
   if (action === 'help-close') { if (resumesDialog()) resumeGame(); else closeModal(); }
   if(action==='create-room')enterRoom('create');
   if(action==='start-room'){unlockSound();online.send('start');}
@@ -305,7 +314,7 @@ function updateHUD(now) {
   if (game.phase === 'countdown') $('#countdown strong').textContent = Math.max(1, Math.ceil(game.countdown));
   if (now > toastUntil) $('#toast').classList.remove('visible');
   if (now - lastHUD < 90) return; lastHUD = now;
-  hudValue('#score',game.score);hudValue('#combo',`Chuỗi ×${game.combo}`);
+  hudValue('#score',game.score);hudValue('#combo',`Chuỗi ×${game.combo}${tipForCombo(game.combo)?` · +${tipForCombo(game.combo)}`:''}`);
   hudValue('#star-track',RULES.stars.map((s,i) => `<span class="${game.score >= s ? 'earned' : ''}" title="${i+1} sao · ${s} điểm" aria-label="${i+1} sao: ${s} điểm${game.score>=s?', đã đạt':''}">${icon('star')}</span>`).join(''),'innerHTML');
   const time=Math.ceil(game.time);hudValue('#timer',`${String(Math.floor(time/60)).padStart(2,'0')}:${String(time%60).padStart(2,'0')}`);
   $('.timer-box').classList.toggle('urgent', time <= 30);
@@ -318,7 +327,8 @@ function updateHUD(now) {
       card.dataset.recipe = recipe.id; card.setAttribute('aria-label', `Đơn ${order.id}: ${recipe.name}. ${recipe.note}`);
       card.innerHTML = `<div class="order-dish"><img src="/assets/dish-${recipe.id}.png" alt="${recipe.name}" draggable="false"></div><div class="order-ingredients">${recipe.parts.map(part=>{const kind=part.split(':')[0],image={bread:'bread',meat:'meat-raw',vegetable:'vegetable-raw',sauce:'sauce'}[kind];return `<span><img src="/assets/${image}.png" alt="${itemName({kind})}" draggable="false"></span>`;}).join('')}</div><div class="order-progress" role="progressbar" aria-label="Thời gian chờ món" aria-valuemin="0" aria-valuemax="100"><i></i></div>`;
     }
-    card.className = `order${order.remaining < 25 ? ' urgent' : ''}`;
+    const price=orderPrice(order);card.className=`order${price.band==='red'?' urgent':''}`;card.dataset.band=price.band;
+    card.title=`Giá hiện tại ${price.revenue} · ${Math.round(price.multiplier*100)}% giá món`;
     card.querySelector('.order-progress').setAttribute('aria-valuenow',Math.ceil(order.remaining/order.total*100));
     card.querySelector('.order-progress i').style.transform=`scaleX(${Math.max(0,order.remaining/order.total)})`;existing.delete(order.id);
   }

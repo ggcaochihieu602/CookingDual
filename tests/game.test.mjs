@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {KitchenGame,RULES,STATIONS,RECIPES,itemKey,isReadyPlate,recipeForPlate} from '../src/game.js';
+import {KitchenGame,RULES,STATIONS,RECIPES,itemKey,isReadyPlate,recipeForPlate,plateCount} from '../src/game.js';
 import {GROUND_PROJECTION} from '../src/movement.js';
 const ready=kind=>({kind,state:{bread:'ready',meat:'cooked',vegetable:'chopped',sauce:'ready'}[kind]});
 const dish=(id='herb')=>({kind:'plate',parts:RECIPES.find(r=>r.id===id).parts.map(key=>{const [kind,state]=key.split(':');return {kind,state};})});
@@ -9,7 +9,7 @@ const station=(g,id)=>g.stations.find(s=>s.id===id);
 function face(g,id,p=g.player){const s=station(g,id),a=s.approach,n=Math.hypot(a.x,a.z);Object.assign(p,{x:s.x+a.x,z:s.z+a.z,facingX:-a.x/n,facingZ:-a.z/n});g.selectTarget();assert.equal(g.target.id,id);return s;}
 function take(g,id){face(g,id);g.interact();}
 function advance(g,time,input={}){for(let remaining=time;remaining>1e-9;remaining-=.02)g.tick(Math.min(.02,remaining),input);}
-const countPlates=g=>g.allItems.filter(i=>i.kind==='plate').length;
+const countPlates=g=>g.allItems.reduce((count,item)=>count+plateCount(item),0);
 
 test('new map has top-row food, two double boards, one double sink and four physical plates',()=>{
   const g=setup();assert.ok(Math.abs(RULES.speed-4.2*1.3)<1e-10);assert.equal(RULES.characterScale,1.3);assert.equal(g.cleanPlates,4);assert.equal(countPlates(g),4);
@@ -39,7 +39,7 @@ test('every equipment approach is reachable from spawn through actual collision 
     const x=queue[i].x+dx,z=queue[i].z+dz,k=key(x,z);if(seen.has(k)||!g.canStand(x*step,z*step))continue;seen.add(k);queue.push({x,z});
   }
   for(const s of STATIONS)assert.ok(seen.has(key(Math.round((s.x+s.approach.x)/step),Math.round((s.z+s.approach.z)/step))),s.id);
-  assert.ok(seen.has(key(0,94)));assert.equal(g.canStand(8.5,-5),false);
+  assert.equal(seen.has(key(0,94)),false,'the customer sidewalk is separated from the kitchen');assert.equal(g.canStand(0,7),false,'counter closes the old bottom doorway');assert.equal(g.canStand(8.5,-5),false);
 });
 
 test('chopping pauses when released or moving and resumes on the same board',()=>{
@@ -72,7 +72,7 @@ test('cooked pan pours onto a plate or ingredients, leaving an empty pan in hand
 test('burn warning begins before a 21-second grace period; fire spreads only to adjacent boxes',()=>{
   const g=setup(),events=[];g.onEvent=e=>events.push(e);const s=station(g,'pan-a');s.item.food=ready('meat');
   advance(g,20.9);assert.equal(s.item.food.state,'cooked');assert.ok(events.some(e=>e.type==='burn-warning'));advance(g,.2);assert.equal(s.item.food.state,'burnt');assert.ok(s.fire>0);
-  advance(g,6.1);assert.ok(station(g,'main-front--5').fire);assert.ok(station(g,'main-front--3').fire);assert.equal(station(g,'counter-a').fire,0);
+  advance(g,6.1);assert.ok(station(g,'main-back--4').fire);assert.ok(station(g,'counter-a').fire);assert.equal(station(g,'main-back--5').fire,0);assert.equal(station(g,'pan-b').fire,0);
   face(g,'pan-a');g.interact();assert.equal(g.player.hand,null);
 });
 
@@ -89,20 +89,21 @@ test('fire, cooking, flights and orders all freeze during pause and results',()=
   g.resume();g.time=.01;advance(g,.02);assert.equal(g.phase,'results');const after=g.snapshot();g.drop();g.dash();g.interact();advance(g,10);assert.deepEqual(g.snapshot(),after);
 });
 
-test('four plates circulate physically: serve, dirty return, carry to sink, wash, collect beside sink',()=>{
+test('four physical plates return as one dirty stack, wash continuously and collect beside the sink',()=>{
   const g=setup();
   for(const id of ['plates','plate-one','plate-two','plate-four']){
     take(g,id);g.player.hand.parts=dish(g.orders[0].recipeId).parts;take(g,'serve');advance(g,.05);assert.equal(countPlates(g),4);
   }
   assert.equal(g.cleanPlates,0);assert.equal(g.dirtyPlates,4);
-  for(let i=0;i<4;i++){
-    const source=[...g.stations,...g.groundItems].find(s=>s.item?.dirty);assert.ok(source);
-    if(source.type==='ground'){Object.assign(g.player,{x:source.x,z:source.z-.6,facingX:0,facingZ:1});g.interact();}else take(g,source.id);
-    assert.equal(g.player.hand.dirty,true);
-    take(g,'sink');advance(g,2.1,{work:true});assert.equal(station(g,'sink').item,null);
-    assert.ok(station(g,'upper-front--2').item);assert.equal(station(g,'upper-front--2').item.dirty,false);
-    take(g,'upper-front--2');Object.assign(g.player,{x:-2+i,z:3,facingX:0,facingZ:1});g.drop();assert.equal(countPlates(g),4);
-  }
+  const returns=[...g.stations,...g.groundItems].filter(s=>s.item?.dirty);assert.equal(returns.length,1);assert.equal(plateCount(returns[0].item),4);
+  take(g,returns[0].id);assert.equal(g.player.hand.dirty,true);assert.equal(plateCount(g.player.hand),4);
+  take(g,'sink');assert.equal(g.player.hand,null);assert.equal(plateCount(station(g,'sink').item),4);
+  advance(g,RULES.wash*4+.1,{work:true});assert.equal(station(g,'sink').item,null);
+  assert.equal(station(g,'upper-front--2').item.dirty,false);
+  const cleanLocations=[...g.stations,...g.groundItems].filter(s=>s.item?.kind==='plate');assert.equal(cleanLocations.length,4);
+  for(const location of cleanLocations){assert.equal(plateCount(location.item),1);assert.equal(location.item.dirty,false);if(location.type==='ground')assert.ok(g.canStand(location.x,location.z,.16));}
+  const output=station(g,'upper-front--2');Object.assign(g.player,{x:output.x+output.approach.x,z:output.z+output.approach.z,facingX:0,facingZ:1});
+  assert.equal(g.selectTarget().item.kind,'plate');g.interact();assert.equal(g.player.hand.kind,'plate');assert.equal(g.player.hand.dirty,false);assert.equal(countPlates(g),4);
   assert.equal(g.cleanPlates,4);assert.equal(g.dirtyPlates,0);
 });
 
@@ -130,6 +131,6 @@ test('all four exact recipes serve; raw, duplicate, dirty and unmatched plates a
 });
 
 test('orders cap at three, expire, refill and replay resets physical objects',()=>{
-  const g=setup();advance(g,90);assert.equal(g.orders.length,3);advance(g,15);assert.ok(g.missed>0);assert.ok(g.orders.length>0);g.score=650;g.time=.01;advance(g,.02);assert.equal(g.stars,3);assert.equal(g.best,650);
+  const g=setup();advance(g,90);assert.equal(g.orders.length,3);advance(g,15);assert.ok(g.missed>0);assert.ok(g.orders.length>0);g.score=650;g.time=.01;advance(g,.02);assert.equal(g.stars,4);assert.equal(g.best,650);
   g.start();assert.equal(g.cleanPlates,4);assert.equal(g.groundItems.length,0);assert.equal(g.projectiles.length,0);assert.equal(g.time,180);assert.equal(g.best,650);
 });

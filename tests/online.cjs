@@ -71,7 +71,7 @@ function face(game,id,player){const s=game.stations.find(s=>s.id===id),a=s.appro
     await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await host.waitForFunction(()=>window.__cookingdual.game.player.hand?.kind==='sauce');
     assert.equal(b.hand,null);pass('iPad hold-drag-release updates the arc and throws to the opposite player');
 
-    room.game.orders=[{id:31,recipeId:'classic',remaining:85,total:100},{id:32,recipeId:'spicy',remaining:60,total:100},{id:33,recipeId:'loaded',remaining:30,total:100}];room.game.score=340;
+    room.game.orders=[{id:31,recipeId:'classic',remaining:85,total:100},{id:32,recipeId:'spicy',remaining:60,total:100},{id:33,recipeId:'loaded',remaining:30,total:100}];Object.assign(room.game,{score:340,revenue:300,tips:40,penalties:0,maxCombo:4});
     Object.assign(a,{x:-1.0,z:3.2,facingX:0,facingZ:1,hand:{kind:'meal',parts:[{kind:'bread',state:'ready'},{kind:'meat',state:'cooked'},{kind:'vegetable',state:'chopped'}]}});Object.assign(b,{x:1.2,z:3.2,facingX:0,facingZ:1});
     await guest.waitForFunction(()=>document.querySelectorAll('.order').length===3&&document.querySelector('#score').textContent==='340');
     for(const p of [host,guest]){
@@ -83,6 +83,7 @@ function face(game,id,player){const s=game.stations.find(s=>s.id===id),a=s.appro
 
     const guide=await desktop.newPage();await guide.goto(url+'/publish.html');assert.equal(await guide.getByRole('heading',{name:'Tạo máy chủ trên Render'}).isVisible(),true);await guide.setViewportSize({width:390,height:844});assert.equal(await guide.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
     room.game.time=.05;await host.waitForFunction(()=>window.__cookingdual.game.phase==='results');await guest.waitForFunction(()=>window.__cookingdual.game.phase==='results');assert.equal(await guest.getByRole('button',{name:'Chờ chủ phòng mở ca mới'}).isDisabled(),true);
+    for(const p of [host,guest]){assert.equal(await p.locator('.result-stars svg').count(),5);assert.equal(await p.locator('.result-stars svg.earned').count(),2);assert.deepEqual(await p.locator('.result-ledger dd').allTextContents(),['300','40','−0','340']);assert.equal(await p.locator('.result-chef figcaption').count(),2);}
     await host.getByRole('button',{name:'Nấu thêm một ca'}).click();for(const p of [host,guest])await p.waitForFunction(()=>window.__cookingdual.game.phase==='countdown'&&document.querySelector('#modal').hidden);assert.equal(room.game.score,0);
     await host.keyboard.press('Escape');await host.getByRole('button',{name:'Rời phòng',exact:true}).click();await guest.waitForFunction(()=>window.__cookingdual.game.phase==='menu');pass('publish guide, shared results, host replay and leaving the room work');
     assert.deepEqual(errors,[]);pass('zero browser runtime errors');fs.writeFileSync('artifacts/online-report.json',JSON.stringify({date:new Date().toISOString(),checks,errors},null,2));

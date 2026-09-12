@@ -7,6 +7,7 @@ foreach ($packageDirectory in @('src','vendor','scripts','tests','assets')) {
   $packageFiles += Get-ChildItem -LiteralPath (Join-Path $packageRoot $packageDirectory) -File -Recurse | Where-Object { $_.Extension -ne '.blend1' }
 }
 Add-Type -AssemblyName System.IO.Compression
+Add-Type -AssemblyName System.IO.Compression.FileSystem
 $packageStream = [IO.File]::Open($packageOutput,[IO.FileMode]::Create)
 $packageArchive = [IO.Compression.ZipArchive]::new($packageStream,[IO.Compression.ZipArchiveMode]::Create)
 try {

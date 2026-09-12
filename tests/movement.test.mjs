@@ -6,7 +6,7 @@ import {GROUND_PROJECTION,DEPTH_SPEED,screenToWorldMotion} from '../src/movement
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 const distance=(a,b)=>Math.hypot(b.x-a.x,(b.z-a.z)*GROUND_PROJECTION);
 function move(input,seconds=.2){
-  const game=new KitchenGame();game.reset('playing');
+  const game=new KitchenGame();game.reset('playing');game.player.z=1;
   const start={x:game.player.x,z:game.player.z};
   for(let remaining=seconds;remaining>1e-9;remaining-=.01)game.tick(Math.min(.01,remaining),input);
   return {game,start,distance:distance(start,game.player)};
@@ -31,7 +31,7 @@ test('joystick strength remains proportional while excessive and invalid input i
 test('continuous dash and dash from standing preserve cardinal and diagonal projected speed',()=>{
   for(const [x,z] of [[1,0],[0,1],[0,-1],[1,1],[-1,-1]]){
     near(move({x,z,dash:true},.2).distance,RULES.dashSpeed*.2);
-    const game=new KitchenGame();game.reset('playing');
+    const game=new KitchenGame();game.reset('playing');game.player.z=1;
     const direction=screenToWorldMotion(x,z),length=Math.hypot(direction.x,direction.z);
     Object.assign(game.player,{facingX:direction.x/length,facingZ:direction.z/length});
     const start={...game.player};game.dash();game.tick(.05);

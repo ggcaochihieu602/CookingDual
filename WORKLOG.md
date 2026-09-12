@@ -1,5 +1,19 @@
 # CookingDual — bản cập nhật 12/09/2026
 
+## Bản 1.3.0 — sơ đồ, đĩa chồng, tương tác và kết quả
+
+- [x] Riêng iPad/tablet: joystick 128 px (80%), cao thêm 30 px, hai cụm nút dịch vào mép 94–126 px. iPhone ngang/dọc giữ kích thước cũ.
+- [x] Hành lang giữa hai khu rộng ba ô; đổi vị trí hai thớt đôi và hai bếp; bếp cách lối đi một ô đệm. Thêm quầy bịt kín lối ra vỉa hè dưới, kiểm tra đường đi tới mọi trạm.
+- [x] Đĩa bẩn tự xếp chồng cạnh xe, cầm/ném/gom chồng và thêm vào bồn đang có đĩa. Giữ rửa liên tục, giữ tiến độ; đĩa sạch ra bên cạnh. Sửa lỗi đĩa xuất hiện làm mất mục tiêu đang rửa. Bảo toàn đủ bốn đĩa.
+- [x] Bóng chuyển động lấy cùng tư thế với khung hình, giữ cache khi đứng yên; bỏ nhiễu tự đổ bóng trên mesh nhân vật. Giữ khử răng cưa, ánh sáng và mô hình trên di động.
+- [x] Thang năm sao 100/240/380/520/660, mốc cao nhất tăng 20%. Giá món 100/110/110/120, ba mức xanh/vàng/đỏ 100%/90%/80%. Tip đúng thứ tự 0/10/20/40, giữ tối đa 40. Năm món đầu còn xanh cho 550+110=660.
+- [x] Đường ném xuất phát tại món trên tay, góc 30°, dùng chung công thức với chuyến ném thật cho cả hai nhân vật.
+- [x] Chọn quầy/đồ gần nhất kể cả nhìn ngang/quay lưng, có viền trắng; vẫn hướng chọn được ô góc, không tương tác xuyên quầy. Vòng màu dưới chân có mũi tên quay theo hướng.
+- [x] Kết quả toàn màn hình theo reference: ribbon, năm sao, tiền món/tip/phạt/tổng, chân dung GLB và tên hai người, chia sẻ/chơi lại. Chụp ảnh sRGB bằng renderer đang dùng, không thêm WebGL context.
+- [x] 63 kiểm tra luật/HTTP/phòng đạt, gồm hai WebSocket thật rửa chung một chồng trong lúc thêm đĩa, đồng bộ ledger/kết quả và chơi lại. Kiểm tra cú pháp đạt.
+- [x] Browser (15), features (9), online (9), reference-polish (8), update-13 (10) và interaction-visuals (6) đạt; không có lỗi runtime trình duyệt.
+- [x] Kiểm tra Chromium mô phỏng iPad gen 9 1080×810/810×1080, iPhone 12 Pro Max 926×428/428×926. Kiểm tra bóng: 60 khung chuyển động cập nhật bóng 60 lần, đứng yên 0 lần. Chưa đo FPS/nhiệt trên Safari thiết bị thật.
+
 ## Bản 1.2.0 — rig GLB và cải thiện theo reference
 
 - [x] Dùng đúng `assets/ragged-dog.glb` và `assets/dog-tick.glb`; giữ nguyên hai nguồn.

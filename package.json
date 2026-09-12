@@ -1,13 +1,13 @@
 {
   "name": "cookingdual",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node server.mjs",
     "start": "node server.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check server.mjs && node --check src/rooms.mjs && node --check src/online.js && node --check src/music.js && node --check src/assets.js && node --check src/level.js && node --check src/game.js && node --check src/materials.js && node --check src/environment.js && node --check src/scene.js && node --check src/main.js && node --check src/dynamics.js && node --check src/movement.js && node --check src/render-budget.js && node --check src/character-animation.js"
+    "check": "node --check server.mjs && node --check src/rooms.mjs && node --check src/online.js && node --check src/music.js && node --check src/assets.js && node --check src/level.js && node --check src/game.js && node --check src/materials.js && node --check src/environment.js && node --check src/scene.js && node --check src/main.js && node --check src/dynamics.js && node --check src/movement.js && node --check src/render-budget.js && node --check src/character-animation.js && node --check src/scoring.js && node --check src/throwing.js && node --check src/portraits.js"
   },
   "dependencies": {
     "ws": "8.21.3"

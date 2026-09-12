@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from '../vendor/RoundedBoxGeometry.js';
 import { mergeGeometries } from '../vendor/BufferGeometryUtils.js';
-import { RULES, itemKey, itemName, isAssembly, recipeForItem, recipeForPlate, isPanFood, isChoppable } from './game.js';
+import { RULES, itemKey, itemName, plateCount, isAssembly, recipeForItem, recipeForPlate, isPanFood, isChoppable } from './game.js';
 import { buildKitchen, buildStation } from './environment.js';
 import { createSurfaceLibrary, studioEnvironment } from './materials.js';
 import { KitchenDynamics } from './dynamics.js';
@@ -9,6 +9,7 @@ import { CAMERA } from './movement.js';
 import { RenderBudget } from './render-budget.js';
 import { clone as cloneSkeleton } from '../vendor/SkeletonUtils.js';
 import { CharacterAnimation } from './character-animation.js';
+import { characterPortrait } from './portraits.js';
 
 const C = { teal: '#699b87', tealDark: '#436f61', cream: '#fff3d7', tile: '#f0e5c8', tileAlt: '#dce2c8', wood: '#c49765', woodDark: '#906b47', coral: '#dc785c', metal: '#a5b7ab', dark: '#405958', yellow: '#e7b75f', green: '#80a56b' };
 const iconSvg = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -143,6 +144,7 @@ export class KitchenScene {
       this.box(g,.11,.18,.12,'#344b51',.27,.24,.08,.02);return g;
     }
     if(item.kind==='plate'&&item.dirty){
+      if(plateCount(item)>1){for(let i=0;i<plateCount(item);i++){const plate=this.food({kind:'plate',dirty:true,parts:[]});plate.position.y=i*.085;g.add(plate);}return g;}
       g.add(this.food({kind:'plate',parts:[]}));
       for(let i=0;i<4;i++)this.sphere(g,.12,'#9b6439',Math.sin(i*2.7)*.22,.095,Math.cos(i*2.7)*.17,1.1,.07,.7);
       return g;
@@ -275,10 +277,12 @@ export class KitchenScene {
       const template=this.assets.get(character),asset=template.userData.rigged?cloneSkeleton(template):template.clone();body.add(asset);
       body.scale.setScalar(RULES.characterScale*(character==='dog-tick'?.82:1));
       if(template.userData.rigged)model.animation=new CharacterAnimation(asset,template.animations);
+      // Detailed skinned surfaces must not sample an older pose's shadow map.
+      asset.traverse(mesh=>{if(mesh.isMesh)mesh.receiveShadow=false;});
       model.legs=[asset.getObjectByName('leg-left'),asset.getObjectByName('leg-right')];
       model.arms=[asset.getObjectByName('arm-left'),asset.getObjectByName('arm-right')];
       model.heldSocket=this.group(this.scene);
-      model.playerRing=this.mesh(this.scene,this.geo('torus',.53,.033,5,32),'#fff4c7',0,.185,2.3);model.playerRing.rotation.x=-Math.PI/2;model.playerRing.castShadow=false;
+      model.playerRing=this.mesh(this.scene,this.geo('torus',.66,.042,5,40),'#fff4c7',0,.185,2.3);model.playerRing.rotation.x=-Math.PI/2;model.playerRing.castShadow=false;
       model.playerLabel=document.createElement('div');model.playerLabel.className='station-label player-label';document.querySelector('#world-labels').append(model.playerLabel);
       model.chefShadow.scale.set(1.3,1.3,1.3);return model;
     }
@@ -401,7 +405,12 @@ export class KitchenScene {
     }
     model.movingShadow=moving||Boolean(p.work)||Math.abs(delta)>.01||model.animation?.throwTime>0||model.animation?.transition>0;
     model.playerRing.position.set(model.chef.position.x,.185,model.chef.position.z);
-    model.playerRing.material=this.mat(p.dash>0?'#eec263':this.game.online?p.color:'#fff4c7');
+    if(!model.directionArrow){
+      const shape=new THREE.Shape();shape.moveTo(-.13,.60);shape.lineTo(.13,.60);shape.lineTo(.13,.79);shape.lineTo(.29,.79);shape.lineTo(0,1.08);shape.lineTo(-.29,.79);shape.lineTo(-.13,.79);shape.closePath();
+      model.directionArrow=new THREE.Mesh(new THREE.ShapeGeometry(shape),new THREE.MeshBasicMaterial({color:p.color,side:THREE.DoubleSide,depthWrite:false}));model.directionArrow.rotation.x=Math.PI/2;model.chef.add(model.directionArrow);model.directionArrow.position.y=.025;
+      model.playerRing.material=new THREE.MeshBasicMaterial({color:p.color,depthWrite:false});
+    }
+    model.playerRing.material.color.set(p.color);model.directionArrow.material.color.set(p.color);
     if(model.color!==p.color){for(const mesh of model.apron)mesh.material=this.mat(p.color);model.color=p.color;}
     // The held prop is outside the scaled character: identical size and orientation on hands, floor and counter.
     const reach=1.03;
@@ -420,6 +429,7 @@ export class KitchenScene {
     model.playerLabel.style.left=`${at.x}px`;model.playerLabel.style.top=`${at.y}px`;model.playerLabel.style.background=this.game.online?p.color:'#3e7862';
   }
   playThrow(playerId){this.chefs.get(playerId)?.animation?.throw();this.shadowDirty=true;}
+  captureCharacterPortraits(){return this.game.players.map(player=>characterPortrait(this,player.character));}
   update(dt) {
     const game = this.game, p = game.player, active = ['menu', 'playing', 'countdown'].includes(game.phase);
     if (active) this.time += dt;
@@ -440,7 +450,11 @@ export class KitchenScene {
       if(!model){model=this.buildChef(player.character);this.chefs.set(player.id,model);}
       this.updateChef(model,player,dt,player.id===p.id);
     }
-    for(const [id,model] of this.chefs)if(!present.has(id)){model.animation?.dispose();model.chef.removeFromParent();model.heldSocket.removeFromParent();model.chefShadow.removeFromParent();model.playerRing.removeFromParent();model.playerLabel.remove();model.heldBadge.remove();this.chefs.delete(id);this.shadowDirty=true;}
+    for(const [id,model] of this.chefs)if(!present.has(id)){
+      model.animation?.dispose();model.directionArrow?.geometry.dispose();model.directionArrow?.material.dispose();
+      if(model.directionArrow)model.playerRing.material.dispose();
+      model.chef.removeFromParent();model.heldSocket.removeFromParent();model.chefShadow.removeFromParent();model.playerRing.removeFromParent();model.playerLabel.remove();model.heldBadge.remove();this.chefs.delete(id);this.shadowDirty=true;
+    }
     for (const s of game.stations) {
       const view = this.stationViews.get(s.id); const key = itemKey(s.item);
       if (view.canopy) {
@@ -481,7 +495,8 @@ export class KitchenScene {
     this.dynamics.update(dt);
     this.shadowAge+=dt;
     const moving=active&&([...this.chefs.values()].some(model=>model.movingShadow)||game.projectiles.length||[...this.dynamics.customers.values()].some(c=>c.root.position.distanceTo(c.target)>.05));
-    if(this.shadowDirty||this.shadowsMoving&&!moving||(moving&&this.shadowAge>=1/15)){
+    // A moving silhouette and its shadow are rendered from the very same pose.
+    if(this.shadowDirty||this.shadowsMoving&&!moving||moving){
       this.renderer.shadowMap.needsUpdate=true;this.shadowDirty=false;this.shadowAge=0;this.shadowUpdates++;
     }
     this.shadowsMoving=Boolean(moving);

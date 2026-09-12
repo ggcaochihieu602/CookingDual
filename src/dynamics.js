@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { mergeGeometries } from '../vendor/BufferGeometryUtils.js';
 import { itemKey } from './game.js';
+import { carryOrigin, throwArc, throwPoint } from './throwing.js';
 
 const Y=new THREE.Vector3(0,1,0);
-const pointAt=(start,end,arc,t)=>new THREE.Vector3(THREE.MathUtils.lerp(start.x,end.x,t),THREE.MathUtils.lerp(start.y,end.y,t)+4*arc*t*(1-t),THREE.MathUtils.lerp(start.z,end.z,t));
+const pointAt=(start,end,arc,t)=>{const p=throwPoint(start,end,arc,t);return new THREE.Vector3(p.x,p.y,p.z);};
 
 export class KitchenDynamics {
   constructor(view){
@@ -12,7 +13,8 @@ export class KitchenDynamics {
     this.aimLine=new THREE.InstancedMesh(new THREE.CylinderGeometry(.024,.024,1,5),this.white,28);this.aimLine.frustumCulled=false;this.aimLine.renderOrder=30;this.aimLine.visible=false;view.scene.add(this.aimLine);
     this.marker=new THREE.Mesh(new THREE.RingGeometry(.30,.38,32),new THREE.MeshBasicMaterial({color:'#fff3b1',side:THREE.DoubleSide,depthTest:false}));
     this.marker.rotation.x=-Math.PI/2;this.marker.renderOrder=31;this.marker.visible=false;view.scene.add(this.marker);
-    this.groundRing=new THREE.Mesh(new THREE.RingGeometry(.43,.48,24),new THREE.MeshBasicMaterial({color:'#fff3b1',side:THREE.DoubleSide}));this.groundRing.rotation.x=-Math.PI/2;this.groundRing.visible=false;view.scene.add(this.groundRing);
+    this.groundRing=new THREE.Mesh(new THREE.RingGeometry(.43,.49,32),new THREE.MeshBasicMaterial({color:'#ffffff',side:THREE.DoubleSide,depthWrite:false}));this.groundRing.rotation.x=-Math.PI/2;this.groundRing.visible=false;view.scene.add(this.groundRing);
+    const halo=new THREE.Mesh(new THREE.RingGeometry(.38,.57,32),new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.2,side:THREE.DoubleSide,depthWrite:false}));halo.position.z=-.003;this.groundRing.add(halo);
     this.spray=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshBasicMaterial({color:'#eefaff',transparent:true,opacity:.68,depthWrite:false}),32);this.spray.frustumCulled=false;this.spray.visible=false;view.scene.add(this.spray);
     this.object=new THREE.Object3D();this.hadOrders=false;
   }
@@ -20,7 +22,8 @@ export class KitchenDynamics {
   updateAim(){
     const {game}=this.v,end=this.aim&&game.phase==='playing'&&game.player.hand?game.throwTarget(this.aim):null;
     this.aimLine.visible=this.marker.visible=Boolean(end);if(!end)return;
-    const p=game.player,start={x:p.x,y:1.25,z:p.z},d=Math.hypot(end.x-p.x,end.z-p.z),arc=Math.min(3,.65+d*.22);
+    const p=game.player,held=this.v.chefs.get(p.id)?.heldSocket,start=held?{x:held.position.x,y:held.position.y,z:held.position.z}:carryOrigin(p),arc=throwArc(start,end);
+    this.aimStart=start;this.aimEnd=end;this.aimArc=arc;
     for(let i=0;i<28;i++){
       const a=pointAt(start,end,arc,i/28),b=pointAt(start,end,arc,(i+.82)/28),delta=b.clone().sub(a);
       this.object.position.copy(a.add(b).multiplyScalar(.5));this.object.quaternion.setFromUnitVectors(Y,delta.clone().normalize());this.object.scale.set(1,delta.length(),1);this.object.updateMatrix();this.aimLine.setMatrixAt(i,this.object.matrix);

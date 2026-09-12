@@ -81,7 +81,7 @@ async function snap(page, name) { await page.evaluate(() => new Promise(resolve=
     await page.keyboard.press('Space');
     assert.equal((await state(page)).player.hand.parts.length, 3);
     await snap(page, 'dish-ready'); await pick(page, 'serve');
-    const served = await state(page); assert.equal(served.served, 1); assert.ok(served.score >= 100);
+    const served = await state(page); assert.equal(served.served, 1); assert.ok([88,99,110].includes(served.score),'first herb sandwich earns the green, yellow or red price with no first-order tip');
     await page.waitForTimeout(250); await snap(page, 'first-delivery'); record('complete recipe using real keyboard actions and collision-aware routes');
     record('carried plate collects cooked food while leaving the empty pan on its burner');
     const dirtyId=await page.evaluate(()=>window.__cookingdual.game.stations.find(s=>s.item?.dirty).id);
@@ -95,9 +95,10 @@ async function snap(page, name) { await page.evaluate(() => new Promise(resolve=
     await page.keyboard.press('Escape'); assert.equal((await state(page)).phase, 'playing'); record('recipe help pauses play and Escape returns safely');
     await page.evaluate(() => { window.__cookingdual.game.time = .05; });
     await page.waitForFunction(() => window.__cookingdual.game.phase === 'results');
-    assert.ok(await page.getByRole('heading', { name: 'Một ca bếp thật vui!' }).isVisible());
+    assert.ok(await page.getByRole('heading', { name: served.score>=100?'Hoàn thành!':'Hết giờ!' }).isVisible());
+    assert.equal(await page.locator('.result-stars svg').count(),5);assert.equal(await page.locator('.results-score').textContent(),String(served.score));
     await snap(page, 'results-desktop');
-    assert.ok(Number(await page.evaluate(() => localStorage.getItem('cookingdual-best'))) >= 100);
+    assert.equal(Number(await page.evaluate(() => localStorage.getItem('cookingdual-best'))),served.score);
     await page.getByRole('button', { name: 'Nấu thêm một ca' }).click(); assert.equal((await state(page)).score, 0); record('results, star rating, saved record and replay');
     await page.waitForFunction(() => window.__cookingdual.game.phase === 'playing');
     await page.evaluate(() => { document.querySelector('#guide-close').click(); });

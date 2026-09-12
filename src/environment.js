@@ -59,7 +59,7 @@ function rocks(v, x, z, size, color) {
 export function buildKitchen(v) {
   const world = v.scene;
   v.water=createWater();world.add(v.water.mesh);
-  for (const area of FLOOR_AREAS.filter(a => ['bridge', 'entry'].includes(a.id))) platform(v, area);
+  for (const area of FLOOR_AREAS.filter(a => a.id === 'bridge')) platform(v, area);
   for (const area of FLOOR_AREAS.filter(a => ['main', 'upper'].includes(a.id))) platform(v, area);
   tracks(v, -12.15, 12.15, -3.2, 9.0); tracks(v, -8.95, 8.95, -12.75, -3.2);
   for (const [x, z, rot] of [[-12.15, 2.8, 0], [12.15, 5.9, 0], [-8.95, -8.6, 0], [8.95, -5.4, 0], [10, -3.2, Math.PI/2]]) cart(v, x, z, rot);
@@ -69,12 +69,12 @@ export function buildKitchen(v) {
     for (const z of [-1.8, 1.2, 4.2, 7.5]) v.cylinder(world, .16, .16, .25, '#918e85', x, .56, z, 10).rotation.x = Math.PI / 2;
   }
   for (const z of [-2.5]) for (const side of [-1, 1]) {
-    rail(v, side * 1.6, z, side * 11.15, z, .55, .13);
+    rail(v, side * 2.3, z, side * 11.15, z, .55, .13);
     for (const x of [3.5, 6.5, 9.4]) { const ring = v.cylinder(world, .165, .165, .24, '#a19483', side * x, .55, z, 10); ring.rotation.z = Math.PI / 2; }
   }
   for (const x of [-8.13, 8.13]) rail(v, x, -11.4, x, -4.4, .50, .13);
-  for (const side of [-1, 1]) { rail(v, side * 1.6, -4.08, side * 8.13, -4.08, .5, .13); rail(v, 0, -11.8, side * 8.13, -11.8, .5, .13); }
-  for (const x of [-1.58, 1.58]) { rail(v, x, -4.1, x, -2.4, .38, .10); rail(v, x, 8.25, x, 9.8, .38, .10); }
+  for (const side of [-1, 1]) { rail(v, side * 2.3, -4.08, side * 8.13, -4.08, .5, .13); rail(v, 0, -11.8, side * 8.13, -11.8, .5, .13); }
+  for (const x of [-2.28, 2.28]) rail(v, x, -4.1, x, -2.4, .38, .10);
   for (const s of v.game.stations) v.buildStation(s);
   v.box(world,SIDEWALK.width+.2,.35,SIDEWALK.depth+.2,'#526e76',0,-.07,SIDEWALK.z,.06);
   for(let i=0;i<30;i++)for(let row=0;row<3;row++){
@@ -225,8 +225,16 @@ export function buildStation(v, s) {
     socket.position.z=.30;
   }
   const selection = v.group(root, 0, .883, 0), hw = s.width / 2, hd = s.depth / 2;
-  for (const x of [-hw, hw]) v.box(selection, .05, .03, s.depth, '#fff7b3', x, 0, 0, .008);
-  for (const z of [-hd, hd]) v.box(selection, s.width, .03, .05, '#fff7b3', 0, 0, z, .008);
+  v.selectionMaterials ||= {
+    edge: new THREE.MeshBasicMaterial({ color: '#ffffff', toneMapped: false }),
+    halo: new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: .18, depthWrite: false, toneMapped: false }),
+  };
+  for (const [thickness, y, material] of [[.13, 0, v.selectionMaterials.halo], [.045, .018, v.selectionMaterials.edge]]) {
+    const edges = [];
+    for (const x of [-hw, hw]) edges.push(v.box(selection, thickness, .022, s.depth + thickness, '#ffffff', x, y, 0, .005));
+    for (const z of [-hd, hd]) edges.push(v.box(selection, s.width - thickness, .022, thickness, '#ffffff', 0, y, z, .005));
+    for (const edge of edges) { edge.material = material; edge.castShadow = false; edge.receiveShadow = false; }
+  }
   selection.visible = false; view.selection = selection;
   const label = document.createElement('div'); label.className = 'station-label'; label.innerHTML = `${icon(s.icon)}<span>${s.label}</span>`;
   document.querySelector('#world-labels').append(label); view.label = label; v.stationViews.set(s.id, view);
